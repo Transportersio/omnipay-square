@@ -1,6 +1,6 @@
 <?php
 
-namespace Omnipay\Judopay\Message;
+namespace Omnipay\Square\Message;
 
 use Omnipay\Tests\TestCase;
 
@@ -12,10 +12,15 @@ class WebPaymentRequestTest extends TestCase
 
         $this->request->initialize(
             array(
-                'yourConsumerReference' => '12345',
-                'yourPaymentReference' => '12345',
-                'yourPaymentMetaData' => array(),
-                'amount' => '10.00'
+                'transactionReference' => 'REF01',
+                'currency' => 'USD',
+                'items' => array(
+                    array(
+                        'name' => 'Name',
+                        'price' => '620.00',
+                        'quantity' => 1
+                    )
+                )
             )
         );
     }
@@ -24,11 +29,15 @@ class WebPaymentRequestTest extends TestCase
     {
         $this->request->initialize(
             array(
-                'judoId' => 'jwmXGbpb87xvDM4B',
-                'yourConsumerReference' => '12345',
-                'yourPaymentReference' => '12345',
-                'amount' => '10.00',
-                'currency' => 'GBP'
+                'transactionReference' => 'REF01',
+                'currency' => 'USD',
+                'items' => array(
+                    array(
+                        'name' => 'Name',
+                        'price' => '620.00',
+                        'quantity' => 1
+                    )
+                )
             )
         );
 
@@ -37,8 +46,6 @@ class WebPaymentRequestTest extends TestCase
 
     public function testGetDataTestMode()
     {
-        $this->request->setTestMode(true);
-
         $data = $this->request->getData();
     }
 }

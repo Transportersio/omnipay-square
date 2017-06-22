@@ -3,12 +3,12 @@
 namespace Omnipay\Square;
 
 use Omnipay\Common\AbstractGateway;
-use SquareConnect;
 
 /**
  * Square Gateway
  *
  */
+
 class Gateway extends AbstractGateway
 {
 
@@ -52,8 +52,8 @@ class Gateway extends AbstractGateway
         return $this->createRequest('\Omnipay\Square\Message\WebPaymentRequest', $parameters);
     }
 
-    public function completePurchase(array $parameters = array()){
+    public function completePurchase(array $parameters = array())
+    {
         return $this->createRequest('\Omnipay\Square\Message\TransactionRequest', $parameters);
     }
-
 }

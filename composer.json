@@ -7,7 +7,7 @@
         "merchant",
         "omnipay",
         "pay",
-        "payment", 
+        "payment",
         "square"
     ],
     "homepage": "https://github.com/transportersio/omnipay-square",

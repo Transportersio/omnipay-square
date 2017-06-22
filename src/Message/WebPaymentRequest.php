@@ -75,7 +75,7 @@ class WebPaymentRequest extends AbstractRequest
 
 
         try {
-            $result = $api_instance->createCheckout($this->getLocationId(),$data);
+            $result = $api_instance->createCheckout($this->getLocationId(), $data);
             $result = $result->getCheckout();
             $response = array(
                 'id' => $result->getId(),

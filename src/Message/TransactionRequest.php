@@ -70,14 +70,14 @@ class TransactionRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
         try {
-            $result = $api_instance->retrieveTransaction($this->getLocationId(),$data['transactionId']);
-            if($error = $result->getErrors()){
+            $result = $api_instance->retrieveTransaction($this->getLocationId(), $data['transactionId']);
+            if ($error = $result->getErrors()) {
                 $response = array(
                     'status' => 'error',
                     'code' => $error['code'],
                     'detail' => $error['detail']
                 );
-            }else{
+            } else {
                 $response = array(
                     'status' => 'success',
                     'transactionId' => $result->getTransaction()->getId()
