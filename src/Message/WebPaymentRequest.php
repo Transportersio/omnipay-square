@@ -1,140 +1,90 @@
 <?php
 
-namespace Omnipay\Judopay\Message;
+namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
+use SquareConnect;
 
 /**
- * Judopay Purchase Request
+ * Square Purchase Request
  */
 class WebPaymentRequest extends AbstractRequest
 {
 
-    public function getApiToken()
+    public function getAccessToken()
     {
-        return $this->getParameter('apiToken');
+        return $this->getParameter('accessToken');
     }
 
-    public function setApiToken($value)
+    public function setAccessToken($value)
     {
-        return $this->setParameter('apiToken', $value);
+        return $this->setParameter('accessToken', $value);
     }
 
-    public function getApiSecret()
+    public function getLocationId()
     {
-        return $this->getParameter('apiSecret');
+        return $this->getParameter('locationId');
     }
 
-    public function setApiSecret($value)
+    public function setLocationId($value)
     {
-        return $this->setParameter('apiSecret', $value);
+        return $this->setParameter('locationId', $value);
     }
-
-    public function getJudoId()
-    {
-        return $this->getParameter('judoId');
-    }
-
-    public function setJudoId($value)
-    {
-        return $this->setParameter('judoId', $value);
-    }
-
-    public function getYourConsumerReference()
-    {
-        return $this->getParameter('yourConsumerReference');
-    }
-
-    public function setYourConsumerReference($value)
-    {
-        return $this->setParameter('yourConsumerReference', $value);
-    }
-
-    public function getYourPaymentReference()
-    {
-        return $this->getParameter('yourPaymentReference');
-    }
-
-    public function setYourPaymentReference($value)
-    {
-        return $this->setParameter('yourPaymentReference', $value);
-    }
-
-    public function getYourPaymentMetaData()
-    {
-        return $this->getParameter('yourPaymentMetaData');
-    }
-
-    public function setYourPaymentMetaData($value)
-    {
-        return $this->setParameter('yourPaymentMetaData', $value);
-    }
-
 
     public function getData()
     {
-        $this->validate('amount');
+        $items = $this->getItems();
 
-        $data = array();
-        $data['judoId'] = $this->getJudoId();
-        $data['yourConsumerReference'] = $this->getYourConsumerReference();
-        $data['yourPaymentReference'] = $this->getYourPaymentReference();
-        $data['yourPaymentMetaData'] = $this->getYourPaymentMetaData();
-        $data['amount'] = $this->getAmount();
-        $data['currency'] = $this->getCurrency();
-        $data['clientIpAddress'] = $this->getRealIpAddr();
-        if (!empty($_SERVER['HTTP_USER_AGENT'])) {
-            $data['clientUserAgent'] = $_SERVER['HTTP_USER_AGENT'];
-        } else {
-            $data['clientUserAgent'] = "";
+        $items_list = array();
+
+        foreach ($items as $index => $item) {
+            $items_list[$index] = new SquareConnect\Model\OrderLineItem(
+                array(
+                    'name' => $item->getName(),
+                    'quantity' => strval($item->getQuantity()),
+                    'base_price_money' => new SquareConnect\Model\Money(
+                        array(
+                            'amount' => intval($item->getPrice()),
+                            'currency' => $this->getCurrency()
+                        )
+                    )
+                )
+            );
         }
 
+        $data_array = array(
+            'idempotency_key' => uniqid(),
+            'order' => new SquareConnect\Model\Order(array(
+                'reference_id' => $this->getTransactionReference(),
+                'line_items' => $items_list
+            )),
+            'ask_for_shipping_address' => false,
+            'redirect_url' => $this->getReturnUrl()
+        );
+
+        $data = new \SquareConnect\Model\CreateCheckoutRequest($data_array);
 
         return $data;
     }
 
-    public function getRealIpAddr()
-    {
-        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-            //check ip from share internet
-            $ip = $_SERVER['HTTP_CLIENT_IP'];
-        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            //to check ip is pass from proxy
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        } else {
-            $ip = "";
-        }
-        return $ip;
-    }
-
     public function sendData($data)
     {
-        $judopay = new \Judopay(
-            array(
-                'apiToken' => $this->getApiToken(),
-                'apiSecret' => $this->getApiSecret(),
-                'judoId' => $this->getJudoId(),
-                'useProduction' => ($this->getTestMode() > 0) ? false : true
-            )
-        );
+        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
-        $webpayment = $judopay->getModel('WebPayments\Payment');
-        $webpayment->setAttributeValues($data);
+        $api_instance = new SquareConnect\Api\CheckoutApi();
+
 
         try {
-            $response = $webpayment->create();
+            $result = $api_instance->createCheckout($this->getLocationId(),$data);
+            $result = $result->getCheckout();
+            $response = array(
+                'id' => $result->getId(),
+                'checkout_url' => $result->getCheckoutPageUrl()
+            );
             return $this->createResponse($response);
-        } catch (\Judopay\Exception\ValidationError $e) {
-            echo $e->getSummary();
-        } catch (\Judopay\Exception\ApiException $e) {
-            echo $e->getSummary();
-        } catch (\Exception $e) {
-            echo $e->getMessage();
+        } catch (Exception $e) {
+            echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
         }
-
-
     }
 
     public function createResponse($response)

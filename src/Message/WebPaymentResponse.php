@@ -1,19 +1,19 @@
 <?php
 
-namespace Omnipay\Judopay\Message;
+namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
- * Judopay Purchase Response
+ * Square Purchase Response
  */
 class WebPaymentResponse extends AbstractResponse implements RedirectResponseInterface
 {
 
     public function isSuccessful()
     {
-        if ($this->data['reference']) {
+        if ($this->data['id']) {
             return true;
         } else {
             return false;

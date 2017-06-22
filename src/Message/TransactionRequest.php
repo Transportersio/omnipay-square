@@ -1,112 +1,92 @@
 <?php
 
-namespace Omnipay\Judopay\Message;
+namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
+use SquareConnect;
 
 /**
- * Judopay Purchase Request
+ * Square Purchase Request
  */
 class TransactionRequest extends AbstractRequest
 {
 
-    public function getApiToken()
+    public function getAccessToken()
     {
-        return $this->getParameter('apiToken');
+        return $this->getParameter('accessToken');
     }
 
-    public function setApiToken($value)
+    public function setAccessToken($value)
     {
-        return $this->setParameter('apiToken', $value);
+        return $this->setParameter('accessToken', $value);
     }
 
-    public function getApiSecret()
+    public function getLocationId()
     {
-        return $this->getParameter('apiSecret');
+        return $this->getParameter('locationId');
     }
 
-    public function setApiSecret($value)
+    public function setLocationId($value)
     {
-        return $this->setParameter('apiSecret', $value);
+        return $this->setParameter('locationId', $value);
     }
 
-    public function getJudoId()
+    public function getCheckoutId()
     {
-        return $this->getParameter('judoId');
+        return $this->getParameter('checkoutId');
     }
 
-    public function setJudoId($value)
-    {
-        return $this->setParameter('judoId', $value);
-    }
-
-    public function getReceiptId()
-    {
-        return $this->getParameter('ReceiptId');
-    }
-
-    public function setReceiptId($value)
+    public function setCheckoutId($value)
     {
         return $this->setParameter('ReceiptId', $value);
     }
 
-    public function getCardToken()
+    public function getTransactionId()
     {
-        return $this->getParameter('CardToken');
+        return $this->getParameter('transactionId');
     }
 
-    public function setCardToken($value)
+    public function setTransactionId($value)
     {
-        return $this->setParameter('CardToken', $value);
-    }
-
-    public function getReference()
-    {
-        return $this->getParameter('Reference');
-    }
-
-    public function setReference($value)
-    {
-        return $this->setParameter('Reference', $value);
+        return $this->setParameter('transactionId', $value);
     }
 
 
     public function getData()
     {
         $data = array();
-        $data['ReceiptId'] = $this->getReceiptId();
-        $data['CardToken'] = $this->getCardToken();
-        $data['Reference'] = $this->getReference();
+
+        $data['checkoutId'] = $this->getCheckoutId();
+        $data['transactionId'] = $this->getTransactionId();
 
         return $data;
     }
 
     public function sendData($data)
     {
-        $judopay = new \Judopay(
-            array(
-                'apiToken' => $this->getApiToken(),
-                'apiSecret' => $this->getApiSecret(),
-                'judoId' => $this->getJudoId(),
-                'useProduction' => ($this->getTestMode() > 0) ? false : true
-            )
-        );
+
+        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
+
+        $api_instance = new SquareConnect\Api\TransactionsApi();
 
         try {
-            $existingTransactionRequest = $judopay->getModel('WebPayments\Transaction');
-            $response = $existingTransactionRequest->find($data['Reference']);
-
+            $result = $api_instance->retrieveTransaction($this->getLocationId(),$data['transactionId']);
+            if($error = $result->getErrors()){
+                $response = array(
+                    'status' => 'error',
+                    'code' => $error['code'],
+                    'detail' => $error['detail']
+                );
+            }else{
+                $response = array(
+                    'status' => 'success',
+                    'transactionId' => $result->getTransaction()->getId()
+                );
+            }
             return $this->createResponse($response);
-
-        } catch (\Judopay\Exception\ValidationError $e) {
-            echo $e->getSummary();
-        } catch (\Judopay\Exception\ApiException $e) {
-            echo $e->getSummary();
-        } catch (\Exception $e) {
-            echo $e->getMessage();
+        } catch (Exception $e) {
+            echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
         }
-
-
     }
 
     public function createResponse($response)

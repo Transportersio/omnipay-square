@@ -1,96 +1,59 @@
 <?php
 
-namespace Omnipay\Judopay;
+namespace Omnipay\Square;
 
 use Omnipay\Common\AbstractGateway;
-use Judopay;
+use SquareConnect;
 
 /**
- * Judopay Gateway
+ * Square Gateway
  *
  */
 class Gateway extends AbstractGateway
 {
 
-    public $judopay;
+    public $square;
 
     public function getName()
     {
-        return 'JudoPay';
+        return 'Square';
     }
 
     public function getDefaultParameters()
     {
         return array(
-            'apiToken' => '',
-            'apiSecret' => '',
-            'judoId' => '',
-            'testMode' => false
+            'accessToken' => ''
         );
     }
 
-    public function getApiToken()
+    public function getAccessToken()
     {
-        return $this->getParameter('apiToken');
+        return $this->getParameter('accessToken');
     }
 
-    public function setApiToken($value)
+    public function setAccessToken($value)
     {
-        return $this->setParameter('apiToken', $value);
+        return $this->setParameter('accessToken', $value);
     }
 
-    public function getApiSecret()
+    public function getLocationId()
     {
-        return $this->getParameter('apiSecret');
+        return $this->getParameter('locationId');
     }
 
-    public function setApiSecret($value)
+    public function setLocationId($value)
     {
-        return $this->setParameter('apiSecret', $value);
+        return $this->setParameter('locationId', $value);
     }
 
-    public function getJudoId()
-    {
-        return $this->getParameter('judoId');
-    }
-
-    public function setJudoId($value)
-    {
-        return $this->setParameter('judoId', $value);
-    }
-
-    public function authorize(array $parameters = array())
-    {
-        return $this->createRequest('\Omnipay\Judopay\Message\PreAuthorizationRequest', $parameters);
-    }
 
     public function purchase(array $parameters = array())
     {
-        return $this->createRequest('\Omnipay\Judopay\Message\WebPaymentRequest', $parameters);
+        return $this->createRequest('\Omnipay\Square\Message\WebPaymentRequest', $parameters);
     }
 
-    public function completePurchase(array $parameters = array())
-    {
-        return $this->createRequest('\Omnipay\Judopay\Message\TransactionRequest', $parameters);
+    public function completePurchase(array $parameters = array()){
+        return $this->createRequest('\Omnipay\Square\Message\TransactionRequest', $parameters);
     }
 
-    public function refund(array $parameters = array())
-    {
-        return $this->createRequest('\Omnipay\Judopay\Message\RefundRequest', $parameters);
-    }
-
-    public function void(array $parameters = array())
-    {
-        return $this->createRequest('\Omnipay\Judopay\Message\VoidRequest', $parameters);
-    }
-
-    public function createCard(array $parameters = array())
-    {
-        return $this->createRequest('\Omnipay\Judopay\Message\RegisteringCardRequest', $parameters);
-    }
-
-    public function updateCard(array $parameters = array())
-    {
-        return $this->createRequest('\Omnipay\Judopay\Message\SaveCardRequest', $parameters);
-    }
 }

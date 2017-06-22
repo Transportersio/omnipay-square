@@ -1,6 +1,6 @@
 <?php
 
-namespace Omnipay\Judopay;
+namespace Omnipay\Square;
 
 use Omnipay\Tests\GatewayTestCase;
 
@@ -12,16 +12,19 @@ class GatewayTest extends GatewayTestCase
         parent::setUp();
 
         $this->gateway = new Gateway($this->getHttpClient(), $this->getHttpRequest());
-        $this->gateway->setApiToken('jwmXGbpb87xvDM4B');
-        $this->gateway->setApiSecret('601dc0a93d2752f5041bdb9a53dc1bf0b4e8ef0f1b03f737416fcf3be1a20b7d');
-        $this->gateway->setJudoId('100826-205');
-        $this->gateway->setTestMode(true);
+        $this->gateway->setAccessToken('sandbox-sq0atb-ULI2NEKmXpkABJb4G17e6A');
+        $this->gateway->setLocationId('CBASEDHRl0qakIMd91_K52yx7XcgAQ');
 
         $this->options = array(
-            'yourConsumerReference' => '12345',
-            'yourPaymentReference' => '12345',
-            'yourPaymentMetaData' => array(),
-            'amount' => '10.00'
+            'transactionReference' => 'REF01',
+            'currency' => 'USD',
+            'items' => array(
+                array(
+                    'name' => 'Name',
+                    'price' => '620.00',
+                    'quantity' => 1
+                )
+            )
         );
     }
 
