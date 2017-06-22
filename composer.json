@@ -1,5 +1,5 @@
 {
-    "name": "transportersio/omnipay-judopay",
+    "name": "transportersio/omnipay-square",
     "type": "library",
     "description": "Square driver for the Omnipay payment processing library",
     "keywords": [

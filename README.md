@@ -1,6 +1,6 @@
 # Omnipay: Square
 
-**Judopay driver for the Omnipay PHP payment processing library**
+**Square driver for the Omnipay PHP payment processing library**
 
 [![Build Status](https://travis-ci.org/Transportersio/omnipay-square.png?branch=master)](https://travis-ci.org/Transportersio/omnipay-square)
 [![Latest Stable Version](https://poser.pugx.org/transportersio/omnipay-square/version.png)](https://packagist.org/packages/transportersio/omnipay-square)
@@ -32,7 +32,7 @@ And run composer to update your dependencies:
 
 The following gateways are provided by this package:
 
-* Judopay
+* Square
 
 For general usage instructions, please see the main [Omnipay](https://github.com/thephpleague/omnipay)
 repository.
