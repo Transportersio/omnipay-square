@@ -1,0 +1,40 @@
+{
+    "name": "transportersio/omnipay-judopay",
+    "type": "library",
+    "description": "Square driver for the Omnipay payment processing library",
+    "keywords": [
+        "gateway",
+        "merchant",
+        "omnipay",
+        "pay",
+        "payment",
+        "square"
+    ],
+    "homepage": "https://github.com/transportersio/omnipay-square",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Siriphan Boonmee",
+            "email": "ms@transporters.io"
+        },
+        {
+            "name": "Omnipay Contributors",
+            "homepage": "https://github.com/transportersio/omnipay-square/contributors"
+        }
+    ],
+    "autoload": {
+        "psr-4": { "Omnipay\\Square\\" : "src/" }
+    },
+    "require": {
+        "omnipay/common": "~2.0",
+        "square/connect": "*"
+    },
+    "require-dev": {
+        "omnipay/tests": "~2.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "2.0.x-dev"
+        }
+    }
+}
