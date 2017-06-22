@@ -1,14 +1,14 @@
-# Omnipay: Judopay
+# Omnipay: Square
 
 **Judopay driver for the Omnipay PHP payment processing library**
 
-[![Build Status](https://travis-ci.org/Transportersio/omnipay-judopay.png?branch=master)](https://travis-ci.org/Transportersio/omnipay-judopay)
-[![Latest Stable Version](https://poser.pugx.org/transportersio/omnipay-judopay/version.png)](https://packagist.org/packages/transportersio/omnipay-judopay)
-[![Total Downloads](https://poser.pugx.org/transportersio/omnipay-judopay/d/total.png)](https://packagist.org/packages/transportersio/omnipay-judopay)
-[![License](https://poser.pugx.org/transportersio/omnipay-judopay/license)](https://packagist.org/packages/transportersio/omnipay-judopay)
+[![Build Status](https://travis-ci.org/Transportersio/omnipay-square.png?branch=master)](https://travis-ci.org/Transportersio/omnipay-square)
+[![Latest Stable Version](https://poser.pugx.org/transportersio/omnipay-square/version.png)](https://packagist.org/packages/transportersio/omnipay-square)
+[![Total Downloads](https://poser.pugx.org/transportersio/omnipay-square/d/total.png)](https://packagist.org/packages/transportersio/omnipay-square)
+[![License](https://poser.pugx.org/transportersio/omnipay-square/license)](https://packagist.org/packages/transportersio/omnipay-square)
 
 [Omnipay](https://github.com/thephpleague/omnipay) is a framework agnostic, multi-gateway payment
-processing library for PHP 5.3+. This package implements Judopay support for Omnipay.
+processing library for PHP 5.3+. This package implements Square support for Omnipay.
 
 ## Installation
 
@@ -18,7 +18,7 @@ to your `composer.json` file:
 ```json
 {
     "require": {
-        "transportersio/omnipay-judopay": "~0.0.2"
+        "transportersio/omnipay-square": "~0.0.2"
     }
 }
 ```
@@ -47,5 +47,5 @@ If you want to keep up to date with release anouncements, discuss ideas for the 
 or ask more detailed questions, there is also a [mailing list](https://groups.google.com/forum/#!forum/omnipay) which
 you can subscribe to.
 
-If you believe you have found a bug, please report it using the [GitHub issue tracker](https://github.com/Transportersio/omnipay-judopay/issues),
+If you believe you have found a bug, please report it using the [GitHub issue tracker](https://github.com/Transportersio/omnipay-square/issues),
 or better yet, fork the library and submit a pull request.
