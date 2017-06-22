@@ -24,7 +24,7 @@ class WebPaymentRequestTest extends TestCase
             )
         );
     }
-
+ 
     public function testGetData()
     {
         $this->request->initialize(
