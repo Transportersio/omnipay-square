@@ -44,7 +44,7 @@ class WebPaymentRequest extends AbstractRequest
                     'quantity' => strval($item->getQuantity()),
                     'base_price_money' => new SquareConnect\Model\Money(
                         array(
-                            'amount' => intval($item->getPrice()),
+                            'amount' => intval($item->getPrice()*100),
                             'currency' => $this->getCurrency()
                         )
                     )
