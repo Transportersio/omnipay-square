@@ -80,7 +80,8 @@ class TransactionRequest extends AbstractRequest
             } else {
                 $response = array(
                     'status' => 'success',
-                    'transactionId' => $result->getTransaction()->getId()
+                    'transactionId' => $result->getTransaction()->getId(),
+                    'referenceId' => $result->getTransaction()->getReferenceId()
                 );
             }
             return $this->createResponse($response);
