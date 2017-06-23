@@ -70,18 +70,34 @@ class TransactionRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
         try {
-            $result = $api_instance->retrieveTransaction($this->getLocationId(), $data['transactionId']);
-            if ($error = $result->getErrors()) {
+            $result = $api_instance->retrieveTransaction($this->getLocationId(),$data['transactionId']);
+
+            $orders = array();
+
+            $lineItems = $result->getTransaction()->getOrder()->getLineItems();
+            if (count($lineItems) > 0) {
+                foreach ($lineItems as $key => $value){
+                    $data = array();
+                    $data['name'] = $value->getName();
+                    $data['quantity'] = $value->getQuantity();
+                    $data['amount'] = $value->getTotalMoney()->getAmount();
+                    $data['currency'] = $value->getTotalMoney()->getCurrency();
+                    array_push($orders,$data);
+                }
+            }
+
+            if($error = $result->getErrors()){
                 $response = array(
                     'status' => 'error',
                     'code' => $error['code'],
                     'detail' => $error['detail']
                 );
-            } else {
+            }else{
                 $response = array(
                     'status' => 'success',
                     'transactionId' => $result->getTransaction()->getId(),
-                    'referenceId' => $result->getTransaction()->getReferenceId()
+                    'referenceId' => $result->getTransaction()->getReferenceId(),
+                    'orders' => $orders
                 );
             }
             return $this->createResponse($response);
