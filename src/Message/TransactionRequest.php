@@ -74,15 +74,16 @@ class TransactionRequest extends AbstractRequest
 
             $orders = array();
 
-            $lineItems = $result->getTransaction()->getOrder()->getLineItems();
+            $lineItems = $result->getTransaction()->getTenders();
+									
             if (count($lineItems) > 0) {
-                foreach ($lineItems as $key => $value) {
+                foreach ($lineItems as $key => $value){
                     $data = array();
-                    $data['name'] = $value->getName();
-                    $data['quantity'] = $value->getQuantity();
-                    $data['amount'] = $value->getTotalMoney()->getAmount();
-                    $data['currency'] = $value->getTotalMoney()->getCurrency();
-                    array_push($orders, $data);
+					$data['name'] = "";
+                    $data['quantity'] = 1;
+                    $data['amount'] = $value->getAmountMoney()->getAmount()/100;
+                    $data['currency'] = $value->getAmountMoney()->getCurrency();
+                    array_push($orders,$data);
                 }
             }
 
