@@ -8,7 +8,7 @@ use SquareConnect;
 /**
  * Square Purchase Request
  */
-class TransactionRequest extends AbstractRequest
+class ChargeRequest extends AbstractRequest
 {
 
     public function getAccessToken()
@@ -51,13 +51,21 @@ class TransactionRequest extends AbstractRequest
         return $this->setParameter('transactionId', $value);
     }
 
+    public function setCardNonce($value) {
+        return $this->setParameter('card_nonce', $value);
+    }
+
 
     public function getData()
     {
-        $data = array();
-
-        $data['checkoutId'] = $this->getCheckoutId();
-        $data['transactionId'] = $this->getTransactionId();
+        $data = array(
+            'idempotency_key' => uniqid(),
+            'amount_money' => new SquareConnect\Model\Money(array(
+                'amount' => intval($this->getParameter('amount')*100),
+                'currency' => $this->getParameter('currency')
+            )),
+            'card_nonce' => $this->getParameter('card_nonce'),
+        );
 
         return $data;
     }
@@ -72,8 +80,6 @@ class TransactionRequest extends AbstractRequest
         try {
             $result = $api_instance->charge($this->getLocationId(), $data);
 
-            dd($data, $result);
-
             $orders = array();
 
             $lineItems = $result->getTransaction()->getTenders();
@@ -83,6 +89,11 @@ class TransactionRequest extends AbstractRequest
                     $data['quantity'] = 1;
                     $data['amount'] = $value->getAmountMoney()->getAmount()/100;
                     $data['currency'] = $value->getAmountMoney()->getCurrency();
+
+                    if($value->getType() == 'CARD') {
+                        $data['card_details'] = $value->getCardDetails();
+                    }
+
                     array_push($orders, $data);
                 }
             }
