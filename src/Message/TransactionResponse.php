@@ -39,4 +39,14 @@ class TransactionResponse extends AbstractResponse implements RedirectResponseIn
     {
         return $this->getData();
     }
+
+    public function getTransactionId()
+    {
+        return $this->data['transactionId'];
+    }
+
+    public function getTransactionReference()
+    {
+        return $this->data['referenceId'];
+    }
 }
