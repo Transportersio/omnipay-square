@@ -8,7 +8,7 @@ use SquareConnect;
 /**
  * Square Purchase Request
  */
-class TransactionRequest extends AbstractRequest
+class ChargeRequest extends AbstractRequest
 {
 
     public function getAccessToken()
@@ -51,13 +51,36 @@ class TransactionRequest extends AbstractRequest
         return $this->setParameter('transactionId', $value);
     }
 
+    public function getIdempotencyKey()
+    {
+        return $this->getParameter('idempotencyKey');
+    }
+
+    public function setIdempotencyKey($value)
+    {
+        return $this->setParameter('idempotencyKey', $value);
+    }
+
+    public function getNonce()
+    {
+        return $this->getParameter('nonce');
+    }
+
+    public function setNonce($value)
+    {
+        return $this->setParameter('nonce', $value);
+    }
 
     public function getData()
     {
-        $data = array();
+        $data = [];
 
-        $data['checkoutId'] = $this->getCheckoutId();
-        $data['transactionId'] = $this->getTransactionId();
+        $data['idempotency_key'] = $this->getIdempotencyKey();
+        $data['amount_money'] = [
+            'amount' => $this->getAmountInteger(),
+            'currency' => $this->getCurrency()
+        ];
+        $data['card_nonce'] = $this->getNonce();
 
         return $data;
     }
@@ -70,43 +93,29 @@ class TransactionRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
         try {
-            $result = $api_instance->retrieveTransaction($this->getLocationId(), $data['transactionId']);
-
-            $orders = array();
-
-            $lineItems = $result->getTransaction()->getTenders();
-            if (count($lineItems) > 0) {
-                foreach ($lineItems as $key => $value) {
-                    $data = array();
-                    $data['quantity'] = 1;
-                    $data['amount'] = $value->getAmountMoney()->getAmount()/100;
-                    $data['currency'] = $value->getAmountMoney()->getCurrency();
-                    array_push($orders, $data);
-                }
-            }
+            $result = $api_instance->charge($this->getLocationId(), $data);
 
             if ($error = $result->getErrors()) {
-                $response = array(
+                $response = [
                     'status' => 'error',
                     'code' => $error['code'],
                     'detail' => $error['detail']
-                );
+                ];
             } else {
-                $response = array(
+                $response = [
                     'status' => 'success',
                     'transactionId' => $result->getTransaction()->getId(),
-                    'referenceId' => $result->getTransaction()->getReferenceId(),
-                    'orders' => $orders
-                );
+                    'referenceId' => $result->getTransaction()->getReferenceId()
+                ];
             }
             return $this->createResponse($response);
         } catch (Exception $e) {
-            echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
+            echo 'Exception when creating transaction: ', $e->getMessage(), PHP_EOL;
         }
     }
 
     public function createResponse($response)
     {
-        return $this->response = new TransactionResponse($this, $response);
+        return $this->response = new ChargeResponse($this, $response);
     }
 }

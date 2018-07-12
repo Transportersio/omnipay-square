@@ -8,7 +8,7 @@ use Omnipay\Common\Message\RedirectResponseInterface;
 /**
  * Square Purchase Response
  */
-class TransactionResponse extends AbstractResponse implements RedirectResponseInterface
+class ChargeResponse extends AbstractResponse implements RedirectResponseInterface
 {
 
     public function isSuccessful()
@@ -38,5 +38,15 @@ class TransactionResponse extends AbstractResponse implements RedirectResponseIn
     public function getRedirectData()
     {
         return $this->getData();
+    }
+
+    public function getTransactionId()
+    {
+        return $this->data['transactionId'];
+    }
+
+    public function getTransactionReference()
+    {
+        return $this->data['referenceId'];
     }
 }
