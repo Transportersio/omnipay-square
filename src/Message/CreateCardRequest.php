@@ -2,25 +2,95 @@
 
 namespace Omnipay\Square\Message;
 
+use Omnipay\Common\Message\AbstractRequest;
+use SquareConnect;
+
 /**
  * Square Create Credit Card Request
  */
-class CreateCardRequest extends WebPaymentRequest
+class CreateCardRequest extends AbstractRequest
 {
+    public function getAccessToken()
+    {
+        return $this->getParameter('accessToken');
+    }
+
+    public function setAccessToken($value)
+    {
+        return $this->setParameter('accessToken', $value);
+    }
+
+    public function getCustomerId()
+    {
+        return $this->getParameter('customerId');
+    }
+
+    public function setCustomerId($value)
+    {
+        return $this->setParameter('customerId', $value);
+    }
+
+    public function getCardNonce()
+    {
+        return $this->getParameter('cardNonce');
+    }
+
+    public function setCardNonce($value)
+    {
+        return $this->setParameter('cardNonce', $value);
+    }
+
+    public function getCardholderName()
+    {
+        return $this->getParameter('cardholderName');
+    }
+
+    public function setCardholderName($value)
+    {
+        return $this->setParameter('cardholderName', $value);
+    }
+
     public function getData()
     {
-        $this->validate('card');
-        $this->getCard()->validate();
+        $data = [];
 
-        $data = $this->getBaseData();
-        $data->InputCurrency = $this->getCurrency();
-        $data->Amount = '1.00';
-        $data->EnableAddBillCard = 1;
-        $data->CardNumber = $this->getCard()->getNumber();
-        $data->CardHolderName = $this->getCard()->getName();
-        $data->DateExpiry = $this->getCard()->getExpiryDate('my');
-        $data->Cvc2 = $this->getCard()->getCvv();
+        $data['customer_id'] = $this->getCustomerId();
+        $data['card_nonce'] = $this->getCardNonce();
+        $data['cardholder_name'] = $this->getCardholderName();
 
         return $data;
+    }
+
+    public function sendData($data)
+    {
+        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
+
+        $api_instance = new SquareConnect\Api\CustomersApi();
+
+        try {
+            $result = $api_instance->createCustomerCard($data['customer_id'], $data);
+
+            if ($error = $result->getErrors()) {
+                $response = [
+                    'status' => 'error',
+                    'code' => $error['code'],
+                    'detail' => $error['detail']
+                ];
+            } else {
+                $response = [
+                    'status' => 'success',
+                    'card' => $result->getCard(),
+                    'customerId' => $data['customer_id']
+                ];
+            }
+            return $this->createResponse($response);
+        } catch (Exception $e) {
+            echo 'Exception when creating transaction: ', $e->getMessage(), PHP_EOL;
+        }
+    }
+
+    public function createResponse($response)
+    {
+        return $this->response = new CreateCardResponse($this, $response);
     }
 }

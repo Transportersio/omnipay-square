@@ -71,6 +71,27 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('nonce', $value);
     }
 
+    public function getCustomerId()
+    {
+        return $this->getParameter('customerId');
+    }
+
+    public function setCustomerId($value)
+    {
+        return $this->setParameter('customerId', $value);
+    }
+
+    public function getCustomerCardId()
+    {
+        return $this->getParameter('customerCardId');
+    }
+
+    public function setCustomerCardId($value)
+    {
+        return $this->setParameter('customerCardId', $value);
+    }
+
+
     public function getData()
     {
         $data = [];
@@ -81,6 +102,8 @@ class ChargeRequest extends AbstractRequest
             'currency' => $this->getCurrency()
         ];
         $data['card_nonce'] = $this->getNonce();
+        $data['customer_id'] = $this->getCustomerId();
+        $data['customer_card_id'] = $this->getCustomerCardId();
 
         return $data;
     }
