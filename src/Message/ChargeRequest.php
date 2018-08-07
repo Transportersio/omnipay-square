@@ -108,16 +108,27 @@ class ChargeRequest extends AbstractRequest
                 $response = array(
                     'status' => 'success',
                     'transactionId' => $result->getTransaction()->getId(),
+                    'transaction' => $result->getTransaction()->getTenders()[0],
                     'referenceId' => $result->getTransaction()->getReferenceId(),
                     'orders' => $orders
                 );
             }
             return $this->createResponse($response);
-        } catch (Exception $e) {
-            echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+	        $response = array(
+		        'status' => false,
+		        'message' => $e->getMessage(),
+	        );
+
+        	return $this->createResponse($response);
         }
     }
 
+	/**
+	 * @param $response
+	 *
+	 * @return TransactionResponse
+	 */
     public function createResponse($response)
     {
         return $this->response = new TransactionResponse($this, $response);
