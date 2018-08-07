@@ -95,7 +95,6 @@ class RefundRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
         try {
-
             $result = $api_instance->createRefund($this->getLocationId(), $this->getTransactionId(),$data);
 
             if ($error = $result->getErrors()) {
