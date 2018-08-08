@@ -74,6 +74,10 @@ class RefundRequest extends AbstractRequest
             throw new \Exception('Error while getting the transaction for refund.');
         }
 
+        if(!$this->getParameter('currency')) {
+        	$this->setCurrency($transactionResponse->getTransaction()->getTenders()[0]->getAmountMoney()->getCurrency());
+        }
+
         $data = array(
             'idempotency_key' => uniqid(),
             'tender_id' => $transactionResponse->getTransaction()->getTenders()[0]->getId(),
@@ -100,25 +104,39 @@ class RefundRequest extends AbstractRequest
             if ($error = $result->getErrors()) {
                 $response = array(
                     'status' => 'error',
-                    'code' => $error['code'],
+                    'code'   => $error['code'],
                     'detail' => $error['detail']
                 );
             } else {
             	$refund = $result->getRefund();
 
                 $response = array(
-                    'status' => 'success',
-                    'transactionId' => $refund->getTransactionId(),
-                    'referenceId' => $refund->getId(),
-	                'description' => $refund->getReason(),
-	                'amount'        => $refund->getAmountMoney()->getAmount(),
-	                'amount_refunded'        => $refund->getAmountMoney()->getAmount(),
-	                'currency'              => $refund->getAmountMoney()->getCurrency(),
+                    'status'            => 'success',
+                    'transactionId'     => $refund->getTransactionId(),
+                    'referenceId'       => $refund->getId(),
+	                'description'       => $refund->getReason(),
+	                'amount'            => $refund->getAmountMoney()->getAmount(),
+	                'amount_refunded'   => $refund->getAmountMoney()->getAmount(),
+	                'currency'          => $refund->getAmountMoney()->getCurrency(),
                 );
             }
             return $this->createResponse($response);
-        } catch (Exception $e) {
-            echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
+        } catch (SquareConnect\ApiException $e) {
+	        $response = array(
+		        'status' => false,
+		        'message' => '',
+	        );
+
+	        foreach ( $e->getResponseBody()->errors as $error ) {
+		        $response['message'] .= $error->detail . PHP_EOL;
+	        }
+
+	        return $this->createResponse($response);
+        } catch(\Exception $e) {
+	        return array(
+		        'status' => false,
+		        'message' => 'Something went wrong when trying to charge you card. Please try again.',
+	        );
         }
     }
 
