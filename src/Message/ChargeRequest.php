@@ -55,16 +55,28 @@ class ChargeRequest extends AbstractRequest
 		return $this->setParameter('card_nonce', $value);
 	}
 
+	public function setMetaData($value) {
+		return $this->setParameter('meta_data', $value);
+	}
+
+	public function getMetaData() {
+		return $this->getParameter('meta_data');
+	}
 
 	public function getData()
 	{
-		$data = array(
+		$required_fields = array(
 			'idempotency_key' => uniqid(),
 			'amount_money' => new SquareConnect\Model\Money(array(
 				'amount' => intval($this->getParameter('amount')*100),
 				'currency' => $this->getParameter('currency')
 			)),
-			'card_nonce' => $this->getParameter('card_nonce'),
+			'card_nonce' => $this->getParameter('card_nonce')
+		);
+
+		$data = array_merge(
+			$required_fields,
+			$this->getMetaData()
 		);
 
 		return $data;
