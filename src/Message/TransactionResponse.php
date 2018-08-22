@@ -47,4 +47,8 @@ class   TransactionResponse extends AbstractResponse implements RedirectResponse
 
         return null;
     }
+
+	public function getMessage() {
+		return $this->data['message'];
+	}
 }
