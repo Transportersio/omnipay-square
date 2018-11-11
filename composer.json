@@ -30,7 +30,7 @@
         "square/connect": "*"
     },
     "require-dev": {
-        "omnipay/tests": "~3.0"
+        "omnipay/tests": "~2.0"
     },
     "extra": {
         "branch-alias": {

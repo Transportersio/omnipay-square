@@ -5,14 +5,14 @@ namespace Omnipay\Square\Message;
 use Omnipay\Common\Message\AbstractResponse;
 
 /**
- * Square Refund Response
+ * Square Purchase Response
  */
-class RefundResponse extends AbstractResponse 
+class ListTransactionsResponse extends AbstractResponse 
 {
 
     public function isSuccessful()
     {
-        if ($this->data['status'] == 'APPROVED') {
+        if ($this->data['status'] == 'success') {
             return true;
         } else {
             return false;

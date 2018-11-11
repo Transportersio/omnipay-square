@@ -22,22 +22,22 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
 
     public function isRedirect()
     {
-        return true;
+        return false;
     }
 
     public function getRedirectUrl()
     {
-        return true;
+        return "";
     }
 
     public function getRedirectMethod()
     {
-        return 'GET';
+        return "";
     }
 
     public function getRedirectData()
     {
-        return $this->getData();
+        return array();
     }
 
     public function getTransactionId()
@@ -45,8 +45,33 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
         return $this->data['transactionId'];
     }
 
-    public function getTransactionReference()
+
+    public function getTenders()
+    {
+        return $this->data['tenders'];
+    }
+
+    public function getOrderId()
+    {
+        return $this->data['orderId'];
+    }
+
+    public function getCreatedAt()
+    {
+        return $this->data['created_at'];
+    }
+
+    public function getReferenceId()
     {
         return $this->data['referenceId'];
     }
+    
+    public function getMessage()
+    {
+		$message = '';
+		if (strlen($this->data['code'])) {
+			$message .= $this->data['code'] . ': ';
+		}
+		return $message . $this->data['error'];
+	}
 }
