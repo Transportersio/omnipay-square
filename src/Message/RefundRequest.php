@@ -83,7 +83,7 @@ class RefundRequest extends AbstractRequest
             'tender_id' => $transactionResponse->getTransaction()->getTenders()[0]->getId(),
             'reason'    => $this->getReason(),
             'amount_money' => new SquareConnect\Model\Money(array(
-                'amount' => intval($this->getParameter('amount')*100),
+                'amount' => $this->getParameter('amount'),
                 'currency' => $this->getParameter('currency')
             )),
         );
