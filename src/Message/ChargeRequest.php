@@ -68,7 +68,7 @@ class ChargeRequest extends AbstractRequest
 		$required_fields = array(
 			'idempotency_key' => uniqid(),
 			'amount_money' => new SquareConnect\Model\Money(array(
-				'amount' => intval($this->getParameter('amount')*100),
+				'amount' => $this->getParameter('amount'),
 				'currency' => $this->getParameter('currency')
 			)),
 			'card_nonce' => $this->getParameter('card_nonce')
@@ -99,7 +99,7 @@ class ChargeRequest extends AbstractRequest
 				foreach ($lineItems as $key => $value) {
 					$data = array();
 					$data['quantity'] = 1;
-					$data['amount'] = $value->getAmountMoney()->getAmount()/100;
+					$data['amount'] = $value->getAmountMoney()->getAmount();
 					$data['currency'] = $value->getAmountMoney()->getCurrency();
 
 					if($value->getType() == 'CARD') {
