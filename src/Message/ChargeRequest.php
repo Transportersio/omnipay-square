@@ -59,10 +59,6 @@ class ChargeRequest extends AbstractRequest
 		return $this->setParameter('meta_data', $value);
 	}
 
-	public function getMetaData() {
-		return $this->getParameter('meta_data');
-	}
-
 	public function getData()
 	{
 		$required_fields = array(
@@ -76,7 +72,7 @@ class ChargeRequest extends AbstractRequest
 
 		$data = array_merge(
 			$required_fields,
-			$this->getMetaData()
+			$this->getParameter('meta_data')
 		);
 
 		return $data;
@@ -84,7 +80,6 @@ class ChargeRequest extends AbstractRequest
 
 	public function sendData($data)
 	{
-
 		SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
 		$api_instance = new SquareConnect\Api\TransactionsApi();
@@ -95,19 +90,21 @@ class ChargeRequest extends AbstractRequest
 			$orders = array();
 
 			$lineItems = $result->getTransaction()->getTenders();
-			if (count($lineItems) > 0) {
-				foreach ($lineItems as $key => $value) {
-					$data = array();
-					$data['quantity'] = 1;
-					$data['amount'] = $value->getAmountMoney()->getAmount();
-					$data['currency'] = $value->getAmountMoney()->getCurrency();
+			foreach ($lineItems as $key => $value) {
+				$data = array();
+				$data['quantity'] = 1;
+				$data['amount'] = $value->getAmountMoney()->getAmount();
+				$data['currency'] = $value->getAmountMoney()->getCurrency();
 
-					if($value->getType() == 'CARD') {
-						$data['card_details'] = $value->getCardDetails();
-					}
-
-					array_push($orders, $data);
+				if($value->getType() == 'CARD') {
+					$card = $value->getCardDetails()->getCard();
+					$data['card_details'] = [
+						'last_4' => $card->getLast4(),
+						'hash' => $card->getFingerprint(),
+					];
 				}
+
+				array_push($orders, $data);
 			}
 
 			if ($error = $result->getErrors()) {
@@ -125,6 +122,7 @@ class ChargeRequest extends AbstractRequest
 					'orders' => $orders
 				);
 			}
+
 			return $this->createResponse($response);
 		} catch (SquareConnect\ApiException $e) {
 			$response = array(
