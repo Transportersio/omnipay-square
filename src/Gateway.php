@@ -5,9 +5,9 @@ namespace Omnipay\Square;
 use Omnipay\Common\AbstractGateway;
 
 /**
- * Square Gateway
- *
- */
+* Square Gateway
+*
+*/
 
 class Gateway extends AbstractGateway
 {
@@ -22,8 +22,8 @@ class Gateway extends AbstractGateway
     public function getDefaultParameters()
     {
         return array(
-            'accessToken' => '',
-            'locationId'  => '',
+            'accessToken'=> '',
+            'locationId' => '',
         );
     }
 
@@ -67,20 +67,20 @@ class Gateway extends AbstractGateway
     {
         return $this->createRequest('\Omnipay\Square\Message\CreateCardRequest', $parameters);
     }
-    
+
     public function listTransactions(array $parameters = array())
     {
-		    return $this->createRequest('\Omnipay\Square\Message\ListTransactionsRequest', $parameters);
-	  }
-    
+        return $this->createRequest('\Omnipay\Square\Message\ListTransactionsRequest', $parameters);
+    }
+
     public function listRefunds(array $parameters = array())
     {
-		    return $this->createRequest('\Omnipay\Square\Message\ListRefundsRequest', $parameters);
-	  }
-	
+        return $this->createRequest('\Omnipay\Square\Message\ListRefundsRequest', $parameters);
+    }
+
     public function refund(array $parameters = array())
     {
         return $this->createRequest('\Omnipay\Square\Message\RefundRequest', $parameters);
     }
-	
+
 }
