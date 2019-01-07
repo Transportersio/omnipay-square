@@ -6,8 +6,8 @@ use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
- * Square Purchase Response
- */
+* Square Purchase Response
+*/
 class ChargeResponse extends AbstractResponse implements RedirectResponseInterface
 {
 
@@ -65,13 +65,13 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
     {
         return $this->data['referenceId'];
     }
-    
+
     public function getMessage()
     {
-		$message = '';
-		if (strlen($this->data['code'])) {
-			$message .= $this->data['code'] . ': ';
-		}
-		return $message . $this->data['error'];
-	}
+        $message = '';
+        if (strlen($this->data['code'])) {
+            $message .= $this->data['code'] . ': ';
+        }
+        return $message . $this->data['error'];
+    }
 }

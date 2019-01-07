@@ -102,11 +102,13 @@ class ListRefundsRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
         try {
-            $result = $api_instance->listRefunds($this->getLocationId(),
+            $result = $api_instance->listRefunds(
+				$this->getLocationId(),
                 $this->getBeginTime(),
                 $this->getEndTime(),
                 $this->getSortOrder(),
-                $this->getCursor());
+                $this->getCursor()
+			);
 
             if ($error = $result->getErrors()) {
                 $response = array(

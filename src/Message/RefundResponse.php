@@ -30,5 +30,4 @@ class RefundResponse extends AbstractResponse
         }
         return $message;
     }
-
 }

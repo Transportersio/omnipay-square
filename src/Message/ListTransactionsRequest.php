@@ -102,8 +102,13 @@ class ListTransactionsRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
         try {
-            $result = $api_instance->listTransactions($this->getLocationId(), $this->getBeginTime(), $this->getEndTime(), $this->getSortOrder(), $this->getCursor());
-
+            $result = $api_instance->listTransactions(
+                $this->getLocationId(),
+                $this->getBeginTime(),
+                $this->getEndTime(),
+                $this->getSortOrder(),
+                $this->getCursor()
+            );
 
             if ($error = $result->getErrors()) {
                 $response = array(

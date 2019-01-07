@@ -30,5 +30,4 @@ class ListTransactionsResponse extends AbstractResponse
         }
         return $message;
     }
-
 }

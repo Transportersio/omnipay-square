@@ -82,5 +82,4 @@ class Gateway extends AbstractGateway
     {
         return $this->createRequest('\Omnipay\Square\Message\RefundRequest', $parameters);
     }
-
 }
