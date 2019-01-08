@@ -103,12 +103,12 @@ class ListRefundsRequest extends AbstractRequest
 
         try {
             $result = $api_instance->listRefunds(
-                			$this->getLocationId(),
-                			$this->getBeginTime(),
-                			$this->getEndTime(),
-                			$this->getSortOrder(),
-                			$this->getCursor()
-						);
+                            $this->getLocationId(),
+                            $this->getBeginTime(),
+                            $this->getEndTime(),
+                            $this->getSortOrder(),
+                            $this->getCursor()
+                    );
 
             if ($error = $result->getErrors()) {
                 $response = array(
