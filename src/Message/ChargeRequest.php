@@ -50,7 +50,7 @@ class ChargeRequest extends AbstractRequest
     {
         return $this->setParameter('transactionId', $value);
     }
-/* Not sure If I need these here
+
     public function getIdempotencyKey()
     {
         return $this->getParameter('idempotencyKey');
@@ -60,7 +60,7 @@ class ChargeRequest extends AbstractRequest
     {
         return $this->setParameter('idempotencyKey', $value);
     }
-*/
+
     public function getNonce()
     {
         return $this->getParameter('nonce');
