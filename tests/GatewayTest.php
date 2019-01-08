@@ -14,6 +14,7 @@ class GatewayTest extends GatewayTestCase
         $this->gateway = new Gateway($this->getHttpClient(), $this->getHttpRequest());
         $this->gateway->setAccessToken('sandbox-sq0atb-ULI2NEKmXpkABJb4G17e6A');
         $this->gateway->setLocationId('CBASEDHRl0qakIMd91_K52yx7XcgAQ');
+        $this->gateway->setIdempotencyKey(uniqid());
 
         $this->options = array(
             'transactionReference' => 'REF01',
