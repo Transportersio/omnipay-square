@@ -19,6 +19,7 @@ class GatewayTest extends GatewayTestCase
         $this->options = array(
             'transactionReference' => 'REF01',
             'currency' => 'USD',
+            'amount' => '620.00',
             'items' => array(
                 array(
                     'name' => 'Name',
