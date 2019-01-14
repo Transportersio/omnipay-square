@@ -16,7 +16,7 @@ class GatewayTest extends GatewayTestCase
         $this->gateway->setLocationId('CBASEDHRl0qakIMd91_K52yx7XcgAQ');
         $this->gateway->setIdempotencyKey(uniqid());
 
-        $options = [
+        $this->options = [
             'transactionReference'=> 'REF01',
             'customer_id'         => uniqid(),
             'card_nonce'          => 'fake-card-nonce-ok',
