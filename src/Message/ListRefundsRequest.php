@@ -6,8 +6,8 @@ use Omnipay\Common\Message\AbstractRequest;
 use SquareConnect;
 
 /**
- * Square List Refunds Request
- */
+* Square List Refunds Request
+*/
 class ListRefundsRequest extends AbstractRequest
 {
 
@@ -71,22 +71,22 @@ class ListRefundsRequest extends AbstractRequest
     {
         return $this->setParameter('cursor', $value);
     }
-/*
+    /*
     public function getCheckoutId()
     {
-        return $this->getParameter('checkOutId');
+    return $this->getParameter('checkOutId');
     }
 
     public function setCheckoutId($value)
     {
-        return $this->setParameter('checkOutId', $value);
+    return $this->setParameter('checkOutId', $value);
     }
-*/    
+    */
 
     public function getData()
     {
         $data = array();
-        
+
         return $data;
         $data['checkoutId'] = $this->getCheckoutId();
         $data['transactionId'] = $this->getTransactionId();
@@ -102,20 +102,28 @@ class ListRefundsRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
         try {
-            $result = $api_instance->listRefunds($this->getLocationId(), $this->getBeginTime(), $this->getEndTime(), $this->getSortOrder(), $this->getCursor());
+            $result = $api_instance->listRefunds(
+                $this->getLocationId(),
+                $this->getBeginTime(),
+                $this->getEndTime(),
+                $this->getSortOrder(),
+                $this->getCursor()
+            );
 
             if ($error = $result->getErrors()) {
                 $response = array(
-                    'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'status'=> 'error',
+                    'code'  => $error['code'],
+                    'detail'=> $error['detail']
                 );
             } else {
-            	$refunds = array();
-            	$refundItems = $result->getRefunds();
-            	if (is_null($refundItems)) $refundItems = array();
-				foreach ( $refundItems as $refund) {
-					$item = new \stdClass();
+                $refunds = array();
+                $refundItems = $result->getRefunds();
+                if (is_null($refundItems)) {
+                    $refundItems = array();
+                }
+                foreach ($refundItems as $refund) {
+                    $item = new \stdClass();
                     $item->id = $refund->getId();
                     $item->tenderId = $refund->getTenderId();
                     $item->locationId = $refund->getLocationId();
@@ -127,10 +135,10 @@ class ListRefundsRequest extends AbstractRequest
                     $item->processingFee = $refund->getProcessingFeeMoney();
                     $item->currency = $refund->getAmountMoney()->getCurrency();
                     array_push($refunds, $item);
-				}
+                }
                 $response = array(
                     'status' => 'success',
-                    'refunds' => $refunds,
+                    'refunds'=> $refunds,
                     'cursor' => $result->getCursor()
                 );
             }

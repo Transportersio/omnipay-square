@@ -160,18 +160,18 @@ class ChargeRequest extends AbstractRequest
                     'detail' => $error['detail']
                 ];
             } else {
-                    $lineItems = $result->getTransaction()->getTenders();
-                    if (count($lineItems) > 0) {
-                        foreach ($lineItems as $key => $value) {
-                            $tender = array();
-                            $tender['id'] = $value->getId();
-                            $tender['quantity'] = 1;
-                            $tender['amount'] = $value->getAmountMoney()->getAmount()/100;
-                            $tender['currency'] = $value->getAmountMoney()->getCurrency();
-                            $item['note'] = $value->getNote();
-                            array_push($tenders, $tender);
-                        }
+                $lineItems = $result->getTransaction()->getTenders();
+                if (count($lineItems) > 0) {
+                    foreach ($lineItems as $key => $value) {
+                        $tender = array();
+                        $tender['id'] = $value->getId();
+                        $tender['quantity'] = 1;
+                        $tender['amount'] = $value->getAmountMoney()->getAmount()/100;
+                        $tender['currency'] = $value->getAmountMoney()->getCurrency();
+                        $item['note'] = $value->getNote();
+                        array_push($tenders, $tender);
                     }
+                }
                 $response = [
                     'status' => 'success',
                     'transactionId' => $result->getTransaction()->getId(),

@@ -30,6 +30,16 @@ class CreateCardRequest extends AbstractRequest
         return $this->setParameter('customerId', $value);
     }
 
+    public function getLocationId()
+    {
+        return $this->getParameter('locationId');
+    }
+
+    public function setLocationId($value)
+    {
+        return $this->setParameter('locationId', $value);
+    }
+
     public function getCardNonce()
     {
         return $this->getParameter('cardNonce');
