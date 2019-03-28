@@ -69,9 +69,10 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
     public function getMessage()
     {
         $message = '';
-        if (strlen($this->data['code'])) {
+        if (isset($this->data['code'])) {
             $message .= $this->data['code'] . ': ';
         }
-        return $message . $this->data['error'];
+
+        return $message . ($this->data['error'] ?? '');
     }
 }
