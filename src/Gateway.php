@@ -47,6 +47,16 @@ class Gateway extends AbstractGateway
         return $this->setParameter('locationId', $value);
     }
 
+    public function getAppId()
+    {
+        return $this->getParameter('appId');
+    }
+
+    public function setAppId($value)
+    {
+        return $this->setParameter('appId', $value);
+    }
+
     public function getIdempotencyKey()
     {
         return $this->getParameter('idempotencyKey');

@@ -45,7 +45,6 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
         return $this->data['transactionId'];
     }
 
-
     public function getTenders()
     {
         return $this->data['tenders'];
@@ -74,5 +73,25 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
         }
 
         return $message . ($this->data['error'] ?? '');
+    }
+
+    /**
+     * Gateway Reference
+     *
+     * @return null|string A reference provided by the gateway to represent this transaction
+     */
+    public function getTransactionReference()
+    {
+        return $this->getTransactionId();
+    }
+
+    /**
+     * Get the tender id that is used for processing refunds
+     *
+     * @return string
+     */
+    public function getBillingId()
+    {
+        return $this->getTenders()[0]['id'];
     }
 }

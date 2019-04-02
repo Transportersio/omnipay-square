@@ -6,8 +6,8 @@ use Omnipay\Common\Message\AbstractRequest;
 use SquareConnect;
 
 /**
-* Square Refund Request
-*/
+ * Square Refund Request
+ */
 class RefundRequest extends AbstractRequest
 {
 
@@ -30,7 +30,6 @@ class RefundRequest extends AbstractRequest
     {
         return $this->setParameter('locationId', $value);
     }
-
 
     public function getIdempotencyKey()
     {
@@ -61,7 +60,6 @@ class RefundRequest extends AbstractRequest
     {
         return $this->setParameter('tenderId', $value);
     }
-
 
     public function getReason()
     {
@@ -98,7 +96,6 @@ class RefundRequest extends AbstractRequest
 
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
-
         try {
             $result = $api_instance->createRefund($data['location_id'], $data['transaction_id'], $data['body']);
 
@@ -109,16 +106,16 @@ class RefundRequest extends AbstractRequest
                     'detail' => $error['detail']
                 ];
             } else {
-                $response       = [
-                    'status'             => $result->getRefund()->getStatus(),
-                    'id'                 => $result->getRefund()->getId(),
-                    'location_id'         => $result->getRefund()->getLocationId(),
-                    'transaction_id'    => $result->getRefund()->getTransactionId(),
-                    'tender_id'            => $result->getRefund()->getTenderId(),
-                    'created_at'        => $result->getRefund()->getCreatedAt(),
-                    'reason'            => $result->getRefund()->getReason(),
-                    'amount'            => $result->getRefund()->getAmountMoney()->getAmount(),
-                    'currency'          => $result->getRefund()->getAmountMoney()->getCurrency(),
+                $response = [
+                    'status' => $result->getRefund()->getStatus(),
+                    'id' => $result->getRefund()->getId(),
+                    'location_id' => $result->getRefund()->getLocationId(),
+                    'transaction_id' => $result->getRefund()->getTransactionId(),
+                    'tender_id' => $result->getRefund()->getTenderId(),
+                    'created_at' => $result->getRefund()->getCreatedAt(),
+                    'reason' => $result->getRefund()->getReason(),
+                    'amount' => $result->getRefund()->getAmountMoney()->getAmount(),
+                    'currency' => $result->getRefund()->getAmountMoney()->getCurrency(),
                 ];
                 $processing_fee = $result->getRefund()->getProcessingFeeMoney();
                 if (!empty($processing_fee)) {

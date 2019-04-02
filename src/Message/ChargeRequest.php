@@ -91,7 +91,6 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('customerCardId', $value);
     }
 
-
     public function getReferenceId()
     {
         return $this->getParameter('referenceId');
