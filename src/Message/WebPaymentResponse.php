@@ -15,9 +15,9 @@ class WebPaymentResponse extends AbstractResponse implements RedirectResponseInt
     {
         if ($this->data['id']) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public function isRedirect()

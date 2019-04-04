@@ -10,7 +10,6 @@ use SquareConnect;
  */
 class RefundRequest extends AbstractRequest
 {
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -91,7 +90,6 @@ class RefundRequest extends AbstractRequest
 
     public function sendData($data)
     {
-
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
         $api_instance = new SquareConnect\Api\TransactionsApi();
@@ -122,10 +120,11 @@ class RefundRequest extends AbstractRequest
                     $response['processing_fee'] = $processing_fee->getAmount();
                 }
             }
-            return $this->createResponse($response);
         } catch (Exception $e) {
             echo 'Exception when creating transaction: ', $e->getMessage(), PHP_EOL;
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)

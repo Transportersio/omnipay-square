@@ -93,10 +93,11 @@ class CreateCustomerRequest extends AbstractRequest
                     'customer' => $result->getCustomer()
                 ];
             }
-            return $this->createResponse($response);
         } catch (Exception $e) {
             echo 'Exception when creating customer: ', $e->getMessage(), PHP_EOL;
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)

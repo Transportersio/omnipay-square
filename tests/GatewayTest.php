@@ -4,7 +4,6 @@ namespace Omnipay\Square;
 
 use Omnipay\Tests\GatewayTestCase;
 
-
 class GatewayTest extends GatewayTestCase
 {
     public $options;
@@ -41,5 +40,4 @@ class GatewayTest extends GatewayTestCase
 
         $this->assertTrue($response->isSuccessful());
     }
-
 }

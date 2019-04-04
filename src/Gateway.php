@@ -5,10 +5,9 @@ namespace Omnipay\Square;
 use Omnipay\Common\AbstractGateway;
 
 /**
-* Square Gateway
-*
-*/
-
+ * Square Gateway
+ *
+ */
 class Gateway extends AbstractGateway
 {
 
@@ -21,10 +20,10 @@ class Gateway extends AbstractGateway
 
     public function getDefaultParameters()
     {
-        return array(
-            'accessToken'=> '',
+        return [
+            'accessToken' => '',
             'locationId' => '',
-        );
+        ];
     }
 
     public function getAccessToken()
@@ -67,37 +66,37 @@ class Gateway extends AbstractGateway
         return $this->setParameter('idempotencyKey', $value);
     }
 
-    public function purchase(array $parameters = array())
+    public function purchase(array $parameters = [])
     {
         return $this->createRequest('\Omnipay\Square\Message\ChargeRequest', $parameters);
     }
 
-    public function completePurchase(array $parameters = array())
+    public function completePurchase(array $parameters = [])
     {
         return $this->createRequest('\Omnipay\Square\Message\TransactionRequest', $parameters);
     }
 
-    public function createCustomer(array $parameters = array())
+    public function createCustomer(array $parameters = [])
     {
         return $this->createRequest('\Omnipay\Square\Message\CreateCustomerRequest', $parameters);
     }
 
-    public function createCard(array $parameters = array())
+    public function createCard(array $parameters = [])
     {
         return $this->createRequest('\Omnipay\Square\Message\CreateCardRequest', $parameters);
     }
 
-    public function listTransactions(array $parameters = array())
+    public function listTransactions(array $parameters = [])
     {
         return $this->createRequest('\Omnipay\Square\Message\ListTransactionsRequest', $parameters);
     }
 
-    public function listRefunds(array $parameters = array())
+    public function listRefunds(array $parameters = [])
     {
         return $this->createRequest('\Omnipay\Square\Message\ListRefundsRequest', $parameters);
     }
 
-    public function refund(array $parameters = array())
+    public function refund(array $parameters = [])
     {
         return $this->createRequest('\Omnipay\Square\Message\RefundRequest', $parameters);
     }

@@ -10,7 +10,6 @@ use SquareConnect;
  */
 class WebPaymentRequest extends AbstractRequest
 {
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -35,7 +34,7 @@ class WebPaymentRequest extends AbstractRequest
     {
         $items = $this->getItems();
 
-        $items_list = array();
+        $items_list = [];
 
         if (!empty($items) && count($items) > 0) {
             foreach ($items as $index => $item) {
@@ -54,15 +53,15 @@ class WebPaymentRequest extends AbstractRequest
             }
         }
 
-        $data_array = array(
+        $data_array = [
             'idempotency_key' => uniqid(),
-            'order' => new SquareConnect\Model\Order(array(
+            'order' => new SquareConnect\Model\Order([
                 'reference_id' => $this->getTransactionReference(),
                 'line_items' => $items_list
-            )),
+            ]),
             'ask_for_shipping_address' => false,
             'redirect_url' => $this->getReturnUrl()
-        );
+        ];
 
         $data = new \SquareConnect\Model\CreateCheckoutRequest($data_array);
 
@@ -78,14 +77,15 @@ class WebPaymentRequest extends AbstractRequest
         try {
             $result = $api_instance->createCheckout($this->getLocationId(), $data);
             $result = $result->getCheckout();
-            $response = array(
+            $response = [
                 'id' => $result->getId(),
                 'checkout_url' => $result->getCheckoutPageUrl()
-            );
-            return $this->createResponse($response);
+            ];
         } catch (Exception $e) {
             echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)

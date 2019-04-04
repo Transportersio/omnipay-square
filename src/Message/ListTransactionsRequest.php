@@ -85,16 +85,10 @@ class ListTransactionsRequest extends AbstractRequest
 
     public function getData()
     {
-        $data = array();
-
-        return $data;
-        $data['checkoutId'] = $this->getCheckoutId();
-        $data['transactionId'] = $this->getTransactionId();
-
-        return $data;
+        return [];
     }
 
-    public function sendData($data)
+    public function sendData()
     {
 
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());

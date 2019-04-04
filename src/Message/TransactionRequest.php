@@ -51,10 +51,9 @@ class TransactionRequest extends AbstractRequest
         return $this->setParameter('transactionId', $value);
     }
 
-
     public function getData()
     {
-        $data = array();
+        $data = [];
 
         $data['checkoutId'] = $this->getCheckoutId();
         $data['transactionId'] = $this->getTransactionId();
@@ -64,7 +63,6 @@ class TransactionRequest extends AbstractRequest
 
     public function sendData($data)
     {
-
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
         $api_instance = new SquareConnect\Api\TransactionsApi();
@@ -72,37 +70,38 @@ class TransactionRequest extends AbstractRequest
         try {
             $result = $api_instance->retrieveTransaction($this->getLocationId(), $data['transactionId']);
 
-            $orders = array();
+            $orders = [];
 
             $lineItems = $result->getTransaction()->getTenders();
             if (count($lineItems) > 0) {
                 foreach ($lineItems as $key => $value) {
-                    $data = array();
+                    $data = [];
                     $data['quantity'] = 1;
-                    $data['amount'] = $value->getAmountMoney()->getAmount()/100;
+                    $data['amount'] = $value->getAmountMoney()->getAmount() / 100;
                     $data['currency'] = $value->getAmountMoney()->getCurrency();
                     array_push($orders, $data);
                 }
             }
 
             if ($error = $result->getErrors()) {
-                $response = array(
+                $response = [
                     'status' => 'error',
                     'code' => $error['code'],
                     'detail' => $error['detail']
-                );
+                ];
             } else {
-                $response = array(
+                $response = [
                     'status' => 'success',
                     'transactionId' => $result->getTransaction()->getId(),
                     'referenceId' => $result->getTransaction()->getReferenceId(),
                     'orders' => $orders
-                );
+                ];
             }
-            return $this->createResponse($response);
         } catch (Exception $e) {
             echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)

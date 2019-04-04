@@ -13,11 +13,7 @@ class CreateCardResponse extends AbstractResponse implements RedirectResponseInt
 
     public function isSuccessful()
     {
-        if ($this->data['status'] == 'success') {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->data['status'] === 'success';
     }
 
     public function getErrorDetail()

@@ -6,12 +6,10 @@ use Omnipay\Common\Message\AbstractRequest;
 use SquareConnect;
 
 /**
-* Square List Refunds Request
-*/
+ * Square List Refunds Request
+ */
 class ListRefundsRequest extends AbstractRequest
 {
-
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -71,6 +69,7 @@ class ListRefundsRequest extends AbstractRequest
     {
         return $this->setParameter('cursor', $value);
     }
+
     /*
     public function getCheckoutId()
     {
@@ -85,16 +84,10 @@ class ListRefundsRequest extends AbstractRequest
 
     public function getData()
     {
-        $data = array();
-
-        return $data;
-        $data['checkoutId'] = $this->getCheckoutId();
-        $data['transactionId'] = $this->getTransactionId();
-
-        return $data;
+        return [];
     }
 
-    public function sendData($data)
+    public function sendData()
     {
 
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
@@ -111,16 +104,16 @@ class ListRefundsRequest extends AbstractRequest
             );
 
             if ($error = $result->getErrors()) {
-                $response = array(
-                    'status'=> 'error',
-                    'code'  => $error['code'],
-                    'detail'=> $error['detail']
-                );
+                $response = [
+                    'status' => 'error',
+                    'code' => $error['code'],
+                    'detail' => $error['detail']
+                ];
             } else {
-                $refunds = array();
+                $refunds = [];
                 $refundItems = $result->getRefunds();
                 if (is_null($refundItems)) {
-                    $refundItems = array();
+                    $refundItems = [];
                 }
                 foreach ($refundItems as $refund) {
                     $item = new \stdClass();
@@ -136,11 +129,11 @@ class ListRefundsRequest extends AbstractRequest
                     $item->currency = $refund->getAmountMoney()->getCurrency();
                     array_push($refunds, $item);
                 }
-                $response = array(
+                $response = [
                     'status' => 'success',
-                    'refunds'=> $refunds,
+                    'refunds' => $refunds,
                     'cursor' => $result->getCursor()
-                );
+                ];
             }
             return $this->createResponse($response);
         } catch (Exception $e) {

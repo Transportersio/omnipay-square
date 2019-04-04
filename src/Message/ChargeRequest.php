@@ -110,7 +110,7 @@ class ChargeRequest extends AbstractRequest
     {
         return $this->setParameter('orderId', $value);
     }
-    
+
     public function getNote()
     {
         return $this->getParameter('note');
@@ -147,7 +147,7 @@ class ChargeRequest extends AbstractRequest
 
         $api_instance = new SquareConnect\Api\TransactionsApi();
 
-        $tenders = array();
+        $tenders = [];
 
         try {
             $result = $api_instance->charge($this->getLocationId(), $data);
@@ -162,10 +162,10 @@ class ChargeRequest extends AbstractRequest
                 $lineItems = $result->getTransaction()->getTenders();
                 if (count($lineItems) > 0) {
                     foreach ($lineItems as $key => $value) {
-                        $tender = array();
+                        $tender = [];
                         $tender['id'] = $value->getId();
                         $tender['quantity'] = 1;
-                        $tender['amount'] = $value->getAmountMoney()->getAmount()/100;
+                        $tender['amount'] = $value->getAmountMoney()->getAmount() / 100;
                         $tender['currency'] = $value->getAmountMoney()->getCurrency();
                         $item['note'] = $value->getNote();
                         array_push($tenders, $tender);

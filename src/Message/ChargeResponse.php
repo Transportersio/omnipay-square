@@ -6,18 +6,14 @@ use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
 
 /**
-* Square Purchase Response
-*/
+ * Square Purchase Response
+ */
 class ChargeResponse extends AbstractResponse implements RedirectResponseInterface
 {
 
     public function isSuccessful()
     {
-        if ($this->data['status'] == 'success') {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->data['status'] === 'success';
     }
 
     public function isRedirect()
@@ -37,7 +33,7 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
 
     public function getRedirectData()
     {
-        return array();
+        return [];
     }
 
     public function getTransactionId()
