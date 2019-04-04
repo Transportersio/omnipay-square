@@ -93,8 +93,11 @@ class CreateCardRequest extends AbstractRequest
                     'customerId' => $data['customer_id']
                 ];
             }
-        } catch (Exception $e) {
-            echo 'Exception when creating transaction: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when creating card: ', $e->getMessage()
+            ];
         }
 
         return $this->createResponse($response);

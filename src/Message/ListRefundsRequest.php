@@ -89,7 +89,6 @@ class ListRefundsRequest extends AbstractRequest
 
     public function sendData()
     {
-
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
         $api_instance = new SquareConnect\Api\TransactionsApi();
@@ -135,10 +134,14 @@ class ListRefundsRequest extends AbstractRequest
                     'cursor' => $result->getCursor()
                 ];
             }
-            return $this->createResponse($response);
-        } catch (Exception $e) {
-            echo 'Exception when calling TransactionsApi->listTransactions: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when calling TransactionsApi->listRefunds: ', $e->getMessage()
+            ];
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)

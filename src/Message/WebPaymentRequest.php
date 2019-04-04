@@ -81,8 +81,11 @@ class WebPaymentRequest extends AbstractRequest
                 'id' => $result->getId(),
                 'checkout_url' => $result->getCheckoutPageUrl()
             ];
-        } catch (Exception $e) {
-            echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when creating web payment request: ', $e->getMessage()
+            ];
         }
 
         return $this->createResponse($response);

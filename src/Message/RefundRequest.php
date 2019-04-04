@@ -120,8 +120,11 @@ class RefundRequest extends AbstractRequest
                     $response['processing_fee'] = $processing_fee->getAmount();
                 }
             }
-        } catch (Exception $e) {
-            echo 'Exception when creating transaction: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when creating refund: ', $e->getMessage()
+            ];
         }
 
         return $this->createResponse($response);

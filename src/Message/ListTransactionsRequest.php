@@ -6,12 +6,10 @@ use Omnipay\Common\Message\AbstractRequest;
 use SquareConnect;
 
 /**
-* Square List Transactions Request
-*/
+ * Square List Transactions Request
+ */
 class ListTransactionsRequest extends AbstractRequest
 {
-
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -71,6 +69,7 @@ class ListTransactionsRequest extends AbstractRequest
     {
         return $this->setParameter('cursor', $value);
     }
+
     /*
     public function getCheckoutId()
     {
@@ -90,7 +89,6 @@ class ListTransactionsRequest extends AbstractRequest
 
     public function sendData()
     {
-
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
         $api_instance = new SquareConnect\Api\TransactionsApi();
@@ -105,16 +103,16 @@ class ListTransactionsRequest extends AbstractRequest
             );
 
             if ($error = $result->getErrors()) {
-                $response = array(
-                    'status'=> 'error',
-                    'code'  => $error['code'],
-                    'detail'=> $error['detail']
-                );
+                $response = [
+                    'status' => 'error',
+                    'code' => $error['code'],
+                    'detail' => $error['detail']
+                ];
             } else {
-                $transactions = array();
+                $transactions = [];
                 $transactionList = $result->getTransactions();
                 if (is_null($transactionList)) {
-                    $transactionList = array();
+                    $transactionList = [];
                 }
                 foreach ($transactionList as $transaction) {
                     $trans = new \stdClass();
@@ -126,10 +124,10 @@ class ListTransactionsRequest extends AbstractRequest
                     $trans->createdAt = $transaction->getCreatedAt();
                     $trans->shippingAddress = $transaction->getShippingAddress();
                     $trans->product = $transaction->getProduct();
-                    $trans->items = array();
+                    $trans->items = [];
                     $tenderList = $transaction->getTenders();
                     if (is_null($tenderList)) {
-                        $tenderList = array();
+                        $tenderList = [];
                     }
                     foreach ($tenderList as $tender) {
                         $item = new \stdClass();
@@ -159,10 +157,10 @@ class ListTransactionsRequest extends AbstractRequest
                         }
                         array_push($trans->items, $item);
                     }
-                    $trans->refunds = array();
+                    $trans->refunds = [];
                     $refundList = $transaction->getRefunds();
                     if (is_null($refundList)) {
-                        $refundList = array();
+                        $refundList = [];
                     }
                     foreach ($refundList as $refund) {
                         $item = new \stdClass();
@@ -180,16 +178,20 @@ class ListTransactionsRequest extends AbstractRequest
                     }
                     array_push($transactions, $trans);
                 }
-                $response = array(
-                    'status'      => 'success',
-                    'transactions'=> $transactions,
-                    'cursor'      => $result->getCursor()
-                );
+                $response = [
+                    'status' => 'success',
+                    'transactions' => $transactions,
+                    'cursor' => $result->getCursor()
+                ];
             }
-            return $this->createResponse($response);
-        } catch (Exception $e) {
-            echo 'Exception when calling TransactionsApi->listTransactions: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when calling TransactionsApi->listTransactions: ', $e->getMessage()
+            ];
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)

@@ -10,7 +10,6 @@ use Omnipay\Common\Message\RedirectResponseInterface;
  */
 class WebPaymentResponse extends AbstractResponse implements RedirectResponseInterface
 {
-
     public function isSuccessful()
     {
         if ($this->data['id']) {

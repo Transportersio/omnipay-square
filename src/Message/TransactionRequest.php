@@ -97,8 +97,11 @@ class TransactionRequest extends AbstractRequest
                     'orders' => $orders
                 ];
             }
-        } catch (Exception $e) {
-            echo 'Exception when calling LocationsApi->listLocations: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when calling LocationsApi->listLocations: ', $e->getMessage()
+            ];
         }
 
         return $this->createResponse($response);

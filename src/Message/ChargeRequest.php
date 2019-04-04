@@ -10,7 +10,6 @@ use SquareConnect;
  */
 class ChargeRequest extends AbstractRequest
 {
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -142,7 +141,6 @@ class ChargeRequest extends AbstractRequest
 
     public function sendData($data)
     {
-
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
         $api_instance = new SquareConnect\Api\TransactionsApi();
@@ -168,7 +166,7 @@ class ChargeRequest extends AbstractRequest
                         $tender['amount'] = $value->getAmountMoney()->getAmount() / 100;
                         $tender['currency'] = $value->getAmountMoney()->getCurrency();
                         $item['note'] = $value->getNote();
-                        array_push($tenders, $tender);
+                        $tenders[] = $tender;
                     }
                 }
                 $response = [
@@ -180,10 +178,14 @@ class ChargeRequest extends AbstractRequest
                     'tenders' => $tenders
                 ];
             }
-            return $this->createResponse($response);
-        } catch (Exception $e) {
-            echo 'Exception when creating transaction: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when creating transaction: ', $e->getMessage()
+            ];
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)
