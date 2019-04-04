@@ -79,7 +79,7 @@ class TransactionRequest extends AbstractRequest
                     $data['quantity'] = 1;
                     $data['amount'] = $value->getAmountMoney()->getAmount() / 100;
                     $data['currency'] = $value->getAmountMoney()->getCurrency();
-                    array_push($orders, $data);
+                    $orders[] = $data;
                 }
             }
 

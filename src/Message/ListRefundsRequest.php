@@ -111,7 +111,7 @@ class ListRefundsRequest extends AbstractRequest
             } else {
                 $refunds = [];
                 $refundItems = $result->getRefunds();
-                if (is_null($refundItems)) {
+                if ($refundItems === null) {
                     $refundItems = [];
                 }
                 foreach ($refundItems as $refund) {
@@ -126,7 +126,7 @@ class ListRefundsRequest extends AbstractRequest
                     $item->amount = $refund->getAmountMoney()->getAmount();
                     $item->processingFee = $refund->getProcessingFeeMoney();
                     $item->currency = $refund->getAmountMoney()->getCurrency();
-                    array_push($refunds, $item);
+                    $refunds[] = $item;
                 }
                 $response = [
                     'status' => 'success',

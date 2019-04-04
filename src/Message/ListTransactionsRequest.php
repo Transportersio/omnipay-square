@@ -111,7 +111,7 @@ class ListTransactionsRequest extends AbstractRequest
             } else {
                 $transactions = [];
                 $transactionList = $result->getTransactions();
-                if (is_null($transactionList)) {
+                if ($transactionList === null) {
                     $transactionList = [];
                 }
                 foreach ($transactionList as $transaction) {
@@ -126,7 +126,7 @@ class ListTransactionsRequest extends AbstractRequest
                     $trans->product = $transaction->getProduct();
                     $trans->items = [];
                     $tenderList = $transaction->getTenders();
-                    if (is_null($tenderList)) {
+                    if ($tenderList === null) {
                         $tenderList = [];
                     }
                     foreach ($tenderList as $tender) {
@@ -135,7 +135,7 @@ class ListTransactionsRequest extends AbstractRequest
                         $item->quantity = 1;
                         $item->amount = $tender->getAmountMoney()->getAmount();
                         $item->currency = $tender->getAmountMoney()->getCurrency();
-                        if (!is_null($tender->getTipMoney())) {
+                        if ($tender->getTipMoney() !== null) {
                             $item->tipAmount = $tender->getTipMoney()->getAmount();
                         }
                         $item->processingFee = $tender->getProcessingFeeMoney()->getAmount();
@@ -155,11 +155,11 @@ class ListTransactionsRequest extends AbstractRequest
                             $item->cashDetails->buyerTenderedMoney = $cashDetails->getBuyerTenderedMoney()->getAmount();
                             $item->cashDetails->chargeBackMoney = $cashDetails->getChangeBackMoney()->getAmount();
                         }
-                        array_push($trans->items, $item);
+                        $trans->items[] = $item;
                     }
                     $trans->refunds = [];
                     $refundList = $transaction->getRefunds();
-                    if (is_null($refundList)) {
+                    if ($refundList === null) {
                         $refundList = [];
                     }
                     foreach ($refundList as $refund) {
@@ -174,9 +174,9 @@ class ListTransactionsRequest extends AbstractRequest
                         $item->amount = $refund->getAmountMoney()->getAmount();
                         $item->processingFee = $refund->getProcessingFeeMoney();
                         $item->currency = $refund->getAmountMoney()->getCurrency();
-                        array_push($trans->items, $item);
+                        $trans->items[] = $item;
                     }
-                    array_push($transactions, $trans);
+                    $transactions[] = $trans;
                 }
                 $response = [
                     'status' => 'success',
