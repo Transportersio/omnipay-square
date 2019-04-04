@@ -30,6 +30,16 @@ class CreateCardRequest extends AbstractRequest
         return $this->setParameter('customerId', $value);
     }
 
+    public function getLocationId()
+    {
+        return $this->getParameter('locationId');
+    }
+
+    public function setLocationId($value)
+    {
+        return $this->setParameter('locationId', $value);
+    }
+
     public function getCardNonce()
     {
         return $this->getParameter('cardNonce');
@@ -83,10 +93,14 @@ class CreateCardRequest extends AbstractRequest
                     'customerId' => $data['customer_id']
                 ];
             }
-            return $this->createResponse($response);
-        } catch (Exception $e) {
-            echo 'Exception when creating transaction: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when creating card: ', $e->getMessage()
+            ];
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)

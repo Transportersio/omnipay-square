@@ -10,7 +10,6 @@ use SquareConnect;
  */
 class ChargeRequest extends AbstractRequest
 {
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -91,6 +90,35 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('customerCardId', $value);
     }
 
+    public function getReferenceId()
+    {
+        return $this->getParameter('referenceId');
+    }
+
+    public function setReferenceId($value)
+    {
+        return $this->setParameter('referenceId', $value);
+    }
+
+    public function getOrderId()
+    {
+        return $this->getParameter('orderId');
+    }
+
+    public function setOrderId($value)
+    {
+        return $this->setParameter('orderId', $value);
+    }
+
+    public function getNote()
+    {
+        return $this->getParameter('note');
+    }
+
+    public function setNote($value)
+    {
+        return $this->setParameter('note', $value);
+    }
 
     public function getData()
     {
@@ -104,16 +132,20 @@ class ChargeRequest extends AbstractRequest
         $data['card_nonce'] = $this->getNonce();
         $data['customer_id'] = $this->getCustomerId();
         $data['customer_card_id'] = $this->getCustomerCardId();
+        $data['reference_id'] = $this->getReferenceId();
+        $data['order_id'] = $this->getOrderId();
+        $data['note'] = $this->getNote();
 
         return $data;
     }
 
     public function sendData($data)
     {
-
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
         $api_instance = new SquareConnect\Api\TransactionsApi();
+
+        $tenders = [];
 
         try {
             $result = $api_instance->charge($this->getLocationId(), $data);
@@ -125,16 +157,35 @@ class ChargeRequest extends AbstractRequest
                     'detail' => $error['detail']
                 ];
             } else {
+                $lineItems = $result->getTransaction()->getTenders();
+                if (count($lineItems) > 0) {
+                    foreach ($lineItems as $key => $value) {
+                        $tender = [];
+                        $tender['id'] = $value->getId();
+                        $tender['quantity'] = 1;
+                        $tender['amount'] = $value->getAmountMoney()->getAmount() / 100;
+                        $tender['currency'] = $value->getAmountMoney()->getCurrency();
+                        $item['note'] = $value->getNote();
+                        $tenders[] = $tender;
+                    }
+                }
                 $response = [
                     'status' => 'success',
                     'transactionId' => $result->getTransaction()->getId(),
-                    'referenceId' => $result->getTransaction()->getReferenceId()
+                    'referenceId' => $result->getTransaction()->getReferenceId(),
+                    'created_at' => $result->getTransaction()->getCreatedAt(),
+                    'orderId' => $result->getTransaction()->getOrderId(),
+                    'tenders' => $tenders
                 ];
             }
-            return $this->createResponse($response);
-        } catch (Exception $e) {
-            echo 'Exception when creating transaction: ', $e->getMessage(), PHP_EOL;
+        } catch (\Exception $e) {
+            $response = [
+                'status' => 'error',
+                'detail' => 'Exception when creating transaction: ', $e->getMessage()
+            ];
         }
+
+        return $this->createResponse($response);
     }
 
     public function createResponse($response)

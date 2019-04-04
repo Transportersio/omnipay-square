@@ -13,11 +13,7 @@ class CreateCustomerResponse extends AbstractResponse implements RedirectRespons
 
     public function isSuccessful()
     {
-        if ($this->data['status'] == 'success') {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->data['status'] === 'success';
     }
 
     public function getErrorDetail()

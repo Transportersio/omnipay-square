@@ -13,31 +13,27 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
 
     public function isSuccessful()
     {
-        if ($this->data['status'] == 'success') {
-            return true;
-        } else {
-            return false;
-        }
+        return $this->data['status'] === 'success';
     }
 
     public function isRedirect()
     {
-        return true;
+        return false;
     }
 
     public function getRedirectUrl()
     {
-        return true;
+        return "";
     }
 
     public function getRedirectMethod()
     {
-        return 'GET';
+        return "";
     }
 
     public function getRedirectData()
     {
-        return $this->getData();
+        return [];
     }
 
     public function getTransactionId()
@@ -45,8 +41,53 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
         return $this->data['transactionId'];
     }
 
-    public function getTransactionReference()
+    public function getTenders()
+    {
+        return $this->data['tenders'];
+    }
+
+    public function getOrderId()
+    {
+        return $this->data['orderId'];
+    }
+
+    public function getCreatedAt()
+    {
+        return $this->data['created_at'];
+    }
+
+    public function getReferenceId()
     {
         return $this->data['referenceId'];
+    }
+
+    public function getMessage()
+    {
+        $message = '';
+        if (isset($this->data['code'])) {
+            $message .= $this->data['code'] . ': ';
+        }
+
+        return $message . ($this->data['error'] ?? '');
+    }
+
+    /**
+     * Gateway Reference
+     *
+     * @return null|string A reference provided by the gateway to represent this transaction
+     */
+    public function getTransactionReference()
+    {
+        return $this->getTransactionId();
+    }
+
+    /**
+     * Get the tender id that is used for processing refunds
+     *
+     * @return string
+     */
+    public function getBillingId()
+    {
+        return $this->getTenders()[0]['id'];
     }
 }
