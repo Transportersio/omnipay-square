@@ -8,7 +8,7 @@ use Omnipay\Common\Message\RedirectResponseInterface;
 /**
  * Square Purchase Response
  */
-class CreateCustomerResponse extends AbstractResponse implements RedirectResponseInterface
+class CustomerResponse extends AbstractResponse implements RedirectResponseInterface
 {
 
     public function isSuccessful()

@@ -1,15 +1,21 @@
 <?php
+/**
+ * Created by IntelliJ IDEA.
+ * User: Dylan
+ * Date: 16/04/2019
+ * Time: 3:50 PM
+ */
 
 namespace Omnipay\Square\Message;
 
+
 use Omnipay\Common\Message\AbstractRequest;
+use Omnipay\Common\Message\ResponseInterface;
 use SquareConnect;
 
-/**
- * Square Create Customer Request
- */
-class CreateCustomerRequest extends AbstractRequest
+class DeleteCustomerRequest extends AbstractRequest
 {
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -20,58 +26,35 @@ class CreateCustomerRequest extends AbstractRequest
         return $this->setParameter('accessToken', $value);
     }
 
-    public function getFirstName()
-    {
-        return $this->getParameter('firstName');
+    public function setCustomerReference($value){
+        return $this->setParameter('customerReference', $value);
     }
 
-    public function setFirstName($value)
-    {
-        return $this->setParameter('firstName', $value);
-    }
 
-    public function getLastName()
-    {
-        return $this->getParameter('lastName');
+    public function getCustomerReference(){
+        return $this->getParameter('customerReference');
     }
-
-    public function setLastName($value)
-    {
-        return $this->setParameter('lastName', $value);
-    }
-
-    public function getCompanyName()
-    {
-        return $this->getParameter('companyName');
-    }
-
-    public function setCompanyName($value)
-    {
-        return $this->setParameter('companyName', $value);
-    }
-
-    public function getEmail()
-    {
-        return $this->getParameter('email');
-    }
-
-    public function setEmail($value)
-    {
-        return $this->setParameter('email', $value);
-    }
-
+    /**
+     * Get the raw data array for this message. The format of this varies from gateway to
+     * gateway, but will usually be either an associative array, or a SimpleXMLElement.
+     *
+     * @return mixed
+     */
     public function getData()
     {
         $data = [];
 
-        $data['given_name'] = $this->getFirstName();
-        $data['family_name'] = $this->getLastName();
-        $data['company_name'] = $this->getCompanyName();
-        $data['email_address'] = $this->getEmail();
+        $data['customer_id'] = $this->getCustomerReference();
 
         return $data;
     }
 
+    /**
+     * Send the request with specified data
+     *
+     * @param  mixed $data The data to send
+     * @return ResponseInterface
+     */
     public function sendData($data)
     {
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
@@ -79,7 +62,7 @@ class CreateCustomerRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\CustomersApi();
 
         try {
-            $result = $api_instance->createCustomer($data);
+            $result = $api_instance->deleteCustomer($data['customer_id']);
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -89,8 +72,7 @@ class CreateCustomerRequest extends AbstractRequest
                 ];
             } else {
                 $response = [
-                    'status' => 'success',
-                    'customer' => $result->getCustomer()
+                    'status' => 'success'
                 ];
             }
         } catch (\Exception $e) {
