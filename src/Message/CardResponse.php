@@ -8,7 +8,7 @@ use Omnipay\Common\Message\RedirectResponseInterface;
 /**
  * Square Purchase Response
  */
-class CreateCardResponse extends AbstractResponse implements RedirectResponseInterface
+class CardResponse extends AbstractResponse implements RedirectResponseInterface
 {
 
     public function isSuccessful()
@@ -28,11 +28,21 @@ class CreateCardResponse extends AbstractResponse implements RedirectResponseInt
 
     public function getCard()
     {
-        return $this->data['card'];
+        if(isset($this->data['card'])){
+            if(!empty($this->data['card'])){
+                return $this->data['card'];
+            }
+        }
+        return null;
     }
 
     public function getCardReference()
     {
-        return $this->data['card']['id'];
+        if(isset($this->data['card'])){
+            if(!empty($this->data['card'])){
+                return $this->data['card']['id'];
+            }
+        }
+        return null;
     }
 }
