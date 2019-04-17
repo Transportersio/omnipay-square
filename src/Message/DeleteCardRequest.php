@@ -1,15 +1,21 @@
 <?php
+/**
+ * Created by IntelliJ IDEA.
+ * User: Dylan
+ * Date: 17/04/2019
+ * Time: 9:44 AM
+ */
 
 namespace Omnipay\Square\Message;
 
+
 use Omnipay\Common\Message\AbstractRequest;
+use Omnipay\Common\Message\ResponseInterface;
 use SquareConnect;
 
-/**
- * Square Create Credit Card Request
- */
-class CreateCardRequest extends AbstractRequest
+class DeleteCardRequest extends AbstractRequest
 {
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -25,38 +31,39 @@ class CreateCardRequest extends AbstractRequest
         return $this->setParameter('customerReference', $value);
     }
 
+
     public function getCustomerReference()
     {
         return $this->getParameter('customerReference');
     }
 
-    public function getCardNonce()
+    public function getLocationId()
     {
-        return $this->getParameter('cardNonce');
+        return $this->getParameter('locationId');
     }
 
-    public function setCardNonce($value)
+    public function setLocationId($value)
     {
-        return $this->setParameter('cardNonce', $value);
+        return $this->setParameter('locationId', $value);
     }
 
-    public function getCardholderName()
+    public function getCardReference()
     {
-        return $this->getParameter('cardholderName');
+        return $this->getParameter('cardReference');
     }
 
-    public function setCardholderName($value)
+    public function setCardReference($value)
     {
-        return $this->setParameter('cardholderName', $value);
+        return $this->setParameter('cardReference', $value);
     }
+
 
     public function getData()
     {
         $data = [];
 
         $data['customer_id'] = $this->getCustomerReference();
-        $data['card_nonce'] = $this->getCardNonce();
-        $data['cardholder_name'] = $this->getCardholderName();
+        $data['card_id'] = $this->getCardReference();
 
         return $data;
     }
@@ -68,7 +75,7 @@ class CreateCardRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\CustomersApi();
 
         try {
-            $result = $api_instance->createCustomerCard($data['customer_id'], $data);
+            $result = $api_instance->deleteCustomerCard($data['customer_id'], $data['card_id']);
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -79,8 +86,6 @@ class CreateCardRequest extends AbstractRequest
             } else {
                 $response = [
                     'status' => 'success',
-                    'card' => $result->getCard(),
-                    'customerId' => $data['customer_id']
                 ];
             }
         } catch (\Exception $e) {
