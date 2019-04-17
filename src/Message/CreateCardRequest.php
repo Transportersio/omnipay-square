@@ -30,14 +30,14 @@ class CreateCardRequest extends AbstractRequest
         return $this->getParameter('customerReference');
     }
 
-    public function getCardNonce()
+    public function getCard()
     {
-        return $this->getParameter('cardNonce');
+        return $this->getParameter('card');
     }
 
-    public function setCardNonce($value)
+    public function setCard($value)
     {
-        return $this->setParameter('cardNonce', $value);
+        return $this->setParameter('card', $value);
     }
 
     public function getCardholderName()
@@ -55,7 +55,7 @@ class CreateCardRequest extends AbstractRequest
         $data = [];
 
         $data['customer_id'] = $this->getCustomerReference();
-        $data['card_nonce'] = $this->getCardNonce();
+        $data['card_nonce'] = $this->getCard();
         $data['cardholder_name'] = $this->getCardholderName();
 
         return $data;
