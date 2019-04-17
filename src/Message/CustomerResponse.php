@@ -45,15 +45,6 @@ class CustomerResponse extends AbstractResponse implements RedirectResponseInter
         return null;
     }
 
-    public function getCardReference(){
-        if(isset($this->data['customer'])){
-            if(!empty($this->data['customer'])){
-                return isset($this->data['customer']['cards'][0]['id']) ? $this->data['customer']['cards'][0]['id'] : null;
-            }
-        }
-        return null;
-    }
-
     public function getCustomerCards(){
         if(isset($this->data['customer'])){
             if(!empty($this->data['customer'])){
