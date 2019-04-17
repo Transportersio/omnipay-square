@@ -8,7 +8,6 @@
 
 namespace Omnipay\Square\Message;
 
-use mysql_xdevapi\Exception;
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
 use SquareConnect;
