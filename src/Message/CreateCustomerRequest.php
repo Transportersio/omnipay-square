@@ -96,7 +96,7 @@ class CreateCustomerRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating customer: ', $e->getMessage()
+                'detail' => 'Exception when creating customer: ' . $e->getMessage()
             ];
         }
 
