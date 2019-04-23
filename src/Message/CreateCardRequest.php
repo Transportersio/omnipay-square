@@ -96,7 +96,7 @@ class CreateCardRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating card: ', $e->getMessage()
+                'detail' => 'Exception when creating card: ' . $e->getMessage()
             ];
         }
 
