@@ -38,27 +38,27 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
 
     public function getTransactionId()
     {
-        return $this->data['transactionId'];
+        return $this->data['transactionId'] ?? null;
     }
 
     public function getTenders()
     {
-        return $this->data['tenders'];
+        return $this->data['tenders'] ?? null;
     }
 
     public function getOrderId()
     {
-        return $this->data['orderId'];
+        return $this->data['orderId'] ?? null;
     }
 
     public function getCreatedAt()
     {
-        return $this->data['created_at'];
+        return $this->data['created_at'] ?? null;
     }
 
     public function getReferenceId()
     {
-        return $this->data['referenceId'];
+        return $this->data['referenceId'] ?? null;
     }
 
     public function getMessage()
@@ -68,7 +68,7 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
             $message .= $this->data['code'] . ': ';
         }
 
-        return $message . ($this->data['error'] ?? '');
+        return $message . ($this->data['detail'] ?? '');
     }
 
     /**
@@ -84,10 +84,10 @@ class ChargeResponse extends AbstractResponse implements RedirectResponseInterfa
     /**
      * Get the tender id that is used for processing refunds
      *
-     * @return string
+     * @return null|string
      */
     public function getBillingId()
     {
-        return $this->getTenders()[0]['id'];
+        return $this->getTenders()[0]['id'] ?? null;
     }
 }
