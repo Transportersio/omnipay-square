@@ -1,15 +1,23 @@
 <?php
+/**
+ * Created by IntelliJ IDEA.
+ * User: Dylan
+ * Date: 16/04/2019
+ * Time: 2:53 PM
+ */
 
 namespace Omnipay\Square\Message;
 
+
+
 use Omnipay\Common\Message\AbstractRequest;
+use Omnipay\Common\Message\ResponseInterface;
 use SquareConnect;
 
-/**
- * Square Create Credit Card Request
- */
-class CreateCardRequest extends AbstractRequest
+class FetchCustomerRequest extends AbstractRequest
 {
+
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -25,42 +33,32 @@ class CreateCardRequest extends AbstractRequest
         return $this->setParameter('customerReference', $value);
     }
 
+
     public function getCustomerReference()
     {
         return $this->getParameter('customerReference');
     }
-
-    public function getCard()
-    {
-        return $this->getParameter('card');
-    }
-
-    public function setCard($value)
-    {
-        return $this->setParameter('card', $value);
-    }
-
-    public function getCardholderName()
-    {
-        return $this->getParameter('cardholderName');
-    }
-
-    public function setCardholderName($value)
-    {
-        return $this->setParameter('cardholderName', $value);
-    }
-
+    /**
+     * Get the raw data array for this message. The format of this varies from gateway to
+     * gateway, but will usually be either an associative array, or a SimpleXMLElement.
+     *
+     * @return mixed
+     */
     public function getData()
     {
         $data = [];
 
         $data['customer_id'] = $this->getCustomerReference();
-        $data['card_nonce'] = $this->getCard();
-        $data['cardholder_name'] = $this->getCardholderName();
 
         return $data;
     }
 
+    /**
+     * Send the request with specified data
+     *
+     * @param  mixed $data The data to send
+     * @return ResponseInterface
+     */
     public function sendData($data)
     {
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
@@ -68,7 +66,7 @@ class CreateCardRequest extends AbstractRequest
         $api_instance = new SquareConnect\Api\CustomersApi();
 
         try {
-            $result = $api_instance->createCustomerCard($data['customer_id'], $data);
+            $result = $api_instance->retrieveCustomer($data['customer_id']);
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -79,14 +77,13 @@ class CreateCardRequest extends AbstractRequest
             } else {
                 $response = [
                     'status' => 'success',
-                    'card' => $result->getCard(),
-                    'customerId' => $data['customer_id']
+                    'customer' => $result->getCustomer()
                 ];
             }
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating card: ' . $e->getMessage()
+                'detail' => 'Exception when creating customer: ', $e->getMessage()
             ];
         }
 
@@ -95,6 +92,7 @@ class CreateCardRequest extends AbstractRequest
 
     public function createResponse($response)
     {
-        return $this->response = new CardResponse($this, $response);
+        return $this->response = new CustomerResponse($this, $response);
     }
+
 }
