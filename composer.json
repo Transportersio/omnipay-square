@@ -1,5 +1,5 @@
 {
-    "name": "transportersio/omnipay-square",
+    "name": "blasttech/omnipay-square",
     "type": "library",
     "description": "Square driver for the Omnipay payment processing library",
     "keywords": [
@@ -26,11 +26,11 @@
         "psr-4": { "Omnipay\\Square\\" : "src/" }
     },
     "require": {
-        "omnipay/common": "~2.0",
+        "omnipay/common": "~3.0",
         "square/connect": "*"
     },
     "require-dev": {
-        "omnipay/tests": "~2.0"
+        "omnipay/tests": "~3.0"
     },
     "extra": {
         "branch-alias": {
