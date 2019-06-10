@@ -187,7 +187,7 @@ class ListTransactionsRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when calling TransactionsApi->listTransactions: ', $e->getMessage()
+                'detail' => 'Exception when calling TransactionsApi->listTransactions: ' . $e->getMessage()
             ];
         }
 
