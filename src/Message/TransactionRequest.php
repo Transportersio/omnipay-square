@@ -100,7 +100,7 @@ class TransactionRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when calling LocationsApi->listLocations: ', $e->getMessage()
+                'detail' => 'Exception when calling LocationsApi->listLocations: ' . $e->getMessage()
             ];
         }
 

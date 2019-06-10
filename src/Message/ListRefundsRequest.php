@@ -137,7 +137,7 @@ class ListRefundsRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when calling TransactionsApi->listRefunds: ', $e->getMessage()
+                'detail' => 'Exception when calling TransactionsApi->listRefunds: ' . $e->getMessage()
             ];
         }
 
