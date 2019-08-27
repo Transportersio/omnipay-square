@@ -10,6 +10,9 @@ use SquareConnect;
  */
 class ChargeRequest extends AbstractRequest
 {
+    protected $liveEndpoint = 'https://connect.squareup.com';
+    protected $testEndpoint = 'https://connect.squareupsandbox.com';
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -121,8 +124,82 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('note', $value);
     }
 
+    public function getEndpoint()
+    {
+        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+    }
+
     public function getData()
     {
+        $api_config = new \SquareConnect\Configuration();
+//        $api_config->setHost("https://connect.squareup.com");
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+        # create an instance of the Location API
+        $locations_api = new \SquareConnect\Api\LocationsApi($api_client);
+
+        try {
+            $locations = $locations_api->listLocations();
+            print_r($locations->getLocations());
+        } catch (\SquareConnect\ApiException $e) {
+            echo "Caught exception!<br/>";
+            print_r("<strong>Response body:</strong><br/>");
+            echo "<pre>"; var_dump($e->getResponseBody()); echo "</pre>";
+            echo "<br/><strong>Response headers:</strong><br/>";
+            echo "<pre>"; var_dump($e->getResponseHeaders()); echo "</pre>";
+            exit(1);
+        }
+
+//        $data = new SquareConnect\Model\CreatePaymentRequest();
+//        $amountMoney = new \SquareConnect\Model\Money();
+//
+//        $amountMoney->setAmount($this->getAmountInteger());
+//        $amountMoney->setCurrency($this->getCurrency());
+//
+//        dump($this->getNonce());
+////        dd($this->getAccessToken());
+//        $data->setSourceId('ccof:58131831-1198-54a9-8883-b5f7a64a5a30'); //$this->getNonce() is null; this needs to be fixed
+//        $data->setIdempotencyKey($this->getIdempotencyKey());
+//        $data->setAmountMoney($amountMoney);
+//        $data->setLocationId($this->getLocationId());
+
+//                $data->setLocationId($this->getLocationId());
+
+//                $data['idempotency_key'] = $this->getIdempotencyKey();
+//                $data['amount_money'] = [
+//                    'amount' => $this->getAmountInteger(),
+//                    'currency' => $this->getCurrency()
+//                ];
+//                $data['card_nonce'] = $this->getNonce();
+//        //        $data['source_id'] = $this->getNonce();
+//                $data['customer_id'] = $this->getCustomerReference();
+//                $data['customer_card_id'] = $this->getCustomerCardId();
+//                $data['reference_id'] = $this->getReferenceId();
+//                $data['order_id'] = $this->getOrderId();
+//                $data['note'] = $this->getNote();
+
+//        return $data;
+    }
+
+    public function sendData($data)
+    {
+//        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
+//        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken(env('SQUARE_TOKEN_SANDBOX'));
+
+        # setup authorization
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost("https://connect.squareupsandbox.com");
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+
+        $api_instance = new \SquareConnect\Api\PaymentsApi($api_client);
+//        $api_instance = new \SquareConnect\Api\PaymentsApi();
+        //        $api_instance = new SquareConnect\Api\TransactionsApi();
+
+        dump($api_config);
+        dump($api_instance);
+
         $data = new SquareConnect\Model\CreatePaymentRequest();
         $amountMoney = new \SquareConnect\Model\Money();
 
@@ -130,40 +207,20 @@ class ChargeRequest extends AbstractRequest
         $amountMoney->setCurrency($this->getCurrency());
 
         dump($this->getNonce());
-        $data->setSourceId('zzzzz'); //$this->getNonce() is null; this needs to be fixed
+        //        dd($this->getAccessToken());
+        $data->setSourceId('ccof:58131831-1198-54a9-8883-b5f7a64a5a30'); //$this->getNonce() is null; this needs to be fixed
+        $data->setSourceId('cnon:CBASECZfEf2qjf3mGaCk1tmsiGsgAQ'); //$this->getNonce() is null; this needs to be fixed
         $data->setIdempotencyKey($this->getIdempotencyKey());
         $data->setAmountMoney($amountMoney);
-
-//        $data->setLocationId($this->getLocationId());
-
-//        $data['idempotency_key'] = $this->getIdempotencyKey();
-//        $data['amount_money'] = [
-//            'amount' => $this->getAmountInteger(),
-//            'currency' => $this->getCurrency()
-//        ];
-//        $data['card_nonce'] = $this->getNonce();
-////        $data['source_id'] = $this->getNonce();
-//        $data['customer_id'] = $this->getCustomerReference();
-//        $data['customer_card_id'] = $this->getCustomerCardId();
-//        $data['reference_id'] = $this->getReferenceId();
-//        $data['order_id'] = $this->getOrderId();
-//        $data['note'] = $this->getNote();
-
-        return $data;
-    }
-
-    public function sendData($data)
-    {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-//        $api_client = new \SquareConnect\ApiClient();
-        $api_instance = new SquareConnect\Api\PaymentsApi();
+        $data->setLocationId($this->getLocationId());
 
         $tenders = [];
+
 
         try {
 
             $result = $api_instance->createPayment($data);
+//            $result = $api_instance->charge($this->getLocationId(), $data);
 
             dd($result);
 
