@@ -123,19 +123,31 @@ class ChargeRequest extends AbstractRequest
 
     public function getData()
     {
-        $data = [];
+        $data = new SquareConnect\Model\CreatePaymentRequest();
+        $amountMoney = new \SquareConnect\Model\Money();
 
-        $data['idempotency_key'] = $this->getIdempotencyKey();
-        $data['amount_money'] = [
-            'amount' => $this->getAmountInteger(),
-            'currency' => $this->getCurrency()
-        ];
-        $data['card_nonce'] = $this->getNonce();
-        $data['customer_id'] = $this->getCustomerReference();
-        $data['customer_card_id'] = $this->getCustomerCardId();
-        $data['reference_id'] = $this->getReferenceId();
-        $data['order_id'] = $this->getOrderId();
-        $data['note'] = $this->getNote();
+        $amountMoney->setAmount($this->getAmountInteger());
+        $amountMoney->setCurrency($this->getCurrency());
+
+        dump($this->getNonce());
+        $data->setSourceId('zzzzz'); //$this->getNonce() is null; this needs to be fixed
+        $data->setIdempotencyKey($this->getIdempotencyKey());
+        $data->setAmountMoney($amountMoney);
+
+//        $data->setLocationId($this->getLocationId());
+
+//        $data['idempotency_key'] = $this->getIdempotencyKey();
+//        $data['amount_money'] = [
+//            'amount' => $this->getAmountInteger(),
+//            'currency' => $this->getCurrency()
+//        ];
+//        $data['card_nonce'] = $this->getNonce();
+////        $data['source_id'] = $this->getNonce();
+//        $data['customer_id'] = $this->getCustomerReference();
+//        $data['customer_card_id'] = $this->getCustomerCardId();
+//        $data['reference_id'] = $this->getReferenceId();
+//        $data['order_id'] = $this->getOrderId();
+//        $data['note'] = $this->getNote();
 
         return $data;
     }
@@ -144,12 +156,16 @@ class ChargeRequest extends AbstractRequest
     {
         SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
 
-        $api_instance = new SquareConnect\Api\TransactionsApi();
+//        $api_client = new \SquareConnect\ApiClient();
+        $api_instance = new SquareConnect\Api\PaymentsApi();
 
         $tenders = [];
 
         try {
-            $result = $api_instance->charge($this->getLocationId(), $data);
+
+            $result = $api_instance->createPayment($data);
+
+            dd($result);
 
             if ($error = $result->getErrors()) {
                 $response = [
