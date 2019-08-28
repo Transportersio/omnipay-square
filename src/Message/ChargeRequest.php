@@ -131,64 +131,13 @@ class ChargeRequest extends AbstractRequest
 
     public function getData()
     {
-//        $api_config = new \SquareConnect\Configuration();
-//        $api_config->setHost($this->getEndpoint());
-//        $api_config->setAccessToken($this->getAccessToken());
-//        $api_client = new \SquareConnect\ApiClient($api_config);
-//        # create an instance of the Location API
-//        $locations_api = new \SquareConnect\Api\LocationsApi($api_client);
-//
-//        try {
-//            $locations = $locations_api->listLocations();
-//            print_r($locations->getLocations());
-//        } catch (\SquareConnect\ApiException $e) {
-//            echo "Caught exception!<br/>";
-//            print_r("<strong>Response body:</strong><br/>");
-//            echo "<pre>"; var_dump($e->getResponseBody()); echo "</pre>";
-//            echo "<br/><strong>Response headers:</strong><br/>";
-//            echo "<pre>"; var_dump($e->getResponseHeaders()); echo "</pre>";
-//            exit(1);
-//        }
-
-//        $data = new SquareConnect\Model\CreatePaymentRequest();
-//        $amountMoney = new \SquareConnect\Model\Money();
-//
-//        $amountMoney->setAmount($this->getAmountInteger());
-//        $amountMoney->setCurrency($this->getCurrency());
-//
-//        dump($this->getNonce());
-////        dd($this->getAccessToken());
-//        $data->setSourceId('ccof:58131831-1198-54a9-8883-b5f7a64a5a30'); //$this->getNonce() is null; this needs to be fixed
-//        $data->setIdempotencyKey($this->getIdempotencyKey());
-//        $data->setAmountMoney($amountMoney);
-//        $data->setLocationId($this->getLocationId());
-
-//                $data->setLocationId($this->getLocationId());
-
-//                $data['idempotency_key'] = $this->getIdempotencyKey();
-//                $data['amount_money'] = [
-//                    'amount' => $this->getAmountInteger(),
-//                    'currency' => $this->getCurrency()
-//                ];
-//                $data['card_nonce'] = $this->getNonce();
-//        //        $data['source_id'] = $this->getNonce();
-//                $data['customer_id'] = $this->getCustomerReference();
-//                $data['customer_card_id'] = $this->getCustomerCardId();
-//                $data['reference_id'] = $this->getReferenceId();
-//                $data['order_id'] = $this->getOrderId();
-//                $data['note'] = $this->getNote();
-
-//        return $data;
-        $data = new SquareConnect\Model\CreatePaymentRequest();
         $amountMoney = new \SquareConnect\Model\Money();
-
         $amountMoney->setAmount($this->getAmountInteger());
         $amountMoney->setCurrency($this->getCurrency());
 
-        dump($this->getNonce());
-
-        $data->setSourceId($this->getNonce() ?? $this->getCustomerCardId()); //$this->getNonce() is null; this needs to be fixed
-        $data->setCustomerId($this->getCustomerReference()); //$this->getNonce() is null; this needs to be fixed
+        $data = new SquareConnect\Model\CreatePaymentRequest();
+        $data->setSourceId($this->getNonce() ?? $this->getCustomerCardId());
+        $data->setCustomerId($this->getCustomerReference());
         $data->setIdempotencyKey($this->getIdempotencyKey());
         $data->setAmountMoney($amountMoney);
         $data->setLocationId($this->getLocationId());
@@ -222,25 +171,12 @@ class ChargeRequest extends AbstractRequest
                     'detail' => $error['detail']
                 ];
             } else {
-                $lineItems = $result->getTransaction()->getTenders();
-                if (count($lineItems) > 0) {
-                    foreach ($lineItems as $key => $value) {
-                        $tender = [];
-                        $tender['id'] = $value->getId();
-                        $tender['quantity'] = 1;
-                        $tender['amount'] = $value->getAmountMoney()->getAmount() / 100;
-                        $tender['currency'] = $value->getAmountMoney()->getCurrency();
-                        $item['note'] = $value->getNote();
-                        $tenders[] = $tender;
-                    }
-                }
                 $response = [
                     'status' => 'success',
-                    'transactionId' => $result->getTransaction()->getId(),
-                    'referenceId' => $result->getTransaction()->getReferenceId(),
-                    'created_at' => $result->getTransaction()->getCreatedAt(),
-                    'orderId' => $result->getTransaction()->getOrderId(),
-                    'tenders' => $tenders
+                    'transactionId' => $result->getPayment()->getId(),
+                    'referenceId' => $result->getPayment()->getReferenceId(),
+                    'created_at' => $result->getPayment()->getCreatedAt(),
+                    'orderId' => $result->getPayment()->getOrderId()
                 ];
             }
         } catch (\Exception $e) {
