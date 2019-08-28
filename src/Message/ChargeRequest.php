@@ -129,6 +129,16 @@ class ChargeRequest extends AbstractRequest
         return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
     }
 
+    private function getApiInstance()
+    {
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+
+        return new \SquareConnect\Api\PaymentsApi($api_client);
+    }
+
     public function getData()
     {
         $amountMoney = new \SquareConnect\Model\Money();
@@ -145,20 +155,8 @@ class ChargeRequest extends AbstractRequest
         return $data;
     }
 
-    private function getApiInstance()
-    {
-        $api_config = new \SquareConnect\Configuration();
-        $api_config->setHost($this->getEndpoint());
-        $api_config->setAccessToken($this->getAccessToken());
-        $api_client = new \SquareConnect\ApiClient($api_config);
-
-        return new \SquareConnect\Api\PaymentsApi($api_client);
-    }
-
     public function sendData($data)
     {
-        $tenders = [];
-
         try {
             $api_instance = $this->getApiInstance();
 
