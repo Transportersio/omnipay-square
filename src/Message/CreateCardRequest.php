@@ -71,21 +71,10 @@ class CreateCardRequest extends AbstractRequest
     public function getData()
     {
         $data = new SquareConnect\Model\CreateCustomerCardRequest();
-//        $data->setCustomerId($this->getCustomerReference());
-        $data->setCardNonce('cnon:CBASEB2noQwHztYV2s_buuQn9Us');
-
-        dump($this->getCustomerReference());
-        dump($this->getCard());
+        $data->setCardNonce($this->getCard());
+        $data->setCardholderName($this->getCardholderName());
 
         return $data;
-//
-//        $data = [];
-//
-//        $data['customer_id'] = $this->getCustomerReference();
-//        $data['card_nonce'] = $this->getCard();
-//        $data['cardholder_name'] = $this->getCardholderName();
-//
-//        return $data;
     }
 
     public function sendData($data)
@@ -93,9 +82,7 @@ class CreateCardRequest extends AbstractRequest
         $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->createCustomerCard('FJDYW3ZVKCXRKAKYRG9R6918KM', $data);
-
-            dd($result);
+            $result = $api_instance->createCustomerCard($this->getCustomerReference(), $data);
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -107,7 +94,7 @@ class CreateCardRequest extends AbstractRequest
                 $response = [
                     'status' => 'success',
                     'card' => $result->getCard(),
-                    'customerId' => $data['customer_id']
+                    'customerId' => $this->getCustomerReference()
                 ];
             }
         } catch (\Exception $e) {
