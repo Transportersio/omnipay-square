@@ -132,7 +132,6 @@ class ChargeRequest extends AbstractRequest
     public function getData()
     {
         $api_config = new \SquareConnect\Configuration();
-//        $api_config->setHost("https://connect.squareup.com");
         $api_config->setHost($this->getEndpoint());
         $api_config->setAccessToken($this->getAccessToken());
         $api_client = new \SquareConnect\ApiClient($api_config);
@@ -207,9 +206,9 @@ class ChargeRequest extends AbstractRequest
         $amountMoney->setCurrency($this->getCurrency());
 
         dump($this->getNonce());
-        //        dd($this->getAccessToken());
-        $data->setSourceId('ccof:58131831-1198-54a9-8883-b5f7a64a5a30'); //$this->getNonce() is null; this needs to be fixed
-        $data->setSourceId('cnon:CBASECZfEf2qjf3mGaCk1tmsiGsgAQ'); //$this->getNonce() is null; this needs to be fixed
+
+        $data->setSourceId($this->getNonce() ?? $this->getCustomerCardId()); //$this->getNonce() is null; this needs to be fixed
+        $data->setCustomerId($this->getCustomerReference()); //$this->getNonce() is null; this needs to be fixed
         $data->setIdempotencyKey($this->getIdempotencyKey());
         $data->setAmountMoney($amountMoney);
         $data->setLocationId($this->getLocationId());
