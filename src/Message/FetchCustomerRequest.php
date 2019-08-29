@@ -1,14 +1,6 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: Dylan
- * Date: 16/04/2019
- * Time: 2:53 PM
- */
 
 namespace Omnipay\Square\Message;
-
-
 
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
@@ -16,7 +8,8 @@ use SquareConnect;
 
 class FetchCustomerRequest extends AbstractRequest
 {
-
+    protected $liveEndpoint = 'https://connect.squareup.com';
+    protected $testEndpoint = 'https://connect.squareupsandbox.com';
 
     public function getAccessToken()
     {
@@ -33,17 +26,26 @@ class FetchCustomerRequest extends AbstractRequest
         return $this->setParameter('customerReference', $value);
     }
 
-
     public function getCustomerReference()
     {
         return $this->getParameter('customerReference');
     }
-    /**
-     * Get the raw data array for this message. The format of this varies from gateway to
-     * gateway, but will usually be either an associative array, or a SimpleXMLElement.
-     *
-     * @return mixed
-     */
+
+    public function getEndpoint()
+    {
+        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+    }
+
+    private function getApiInstance()
+    {
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+
+        return new \SquareConnect\Api\CustomersApi($api_client);
+    }
+
     public function getData()
     {
         $data = [];
@@ -53,19 +55,11 @@ class FetchCustomerRequest extends AbstractRequest
         return $data;
     }
 
-    /**
-     * Send the request with specified data
-     *
-     * @param  mixed $data The data to send
-     * @return ResponseInterface
-     */
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
-
         try {
+            $api_instance = $this->getApiInstance();
+
             $result = $api_instance->retrieveCustomer($data['customer_id']);
 
             if ($error = $result->getErrors()) {
@@ -83,7 +77,7 @@ class FetchCustomerRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating customer: ' . $e->getMessage()
+                'detail' => 'Exception when retrieving customer: ' . $e->getMessage()
             ];
         }
 

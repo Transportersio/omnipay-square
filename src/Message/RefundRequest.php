@@ -10,6 +10,9 @@ use SquareConnect;
  */
 class RefundRequest extends AbstractRequest
 {
+    protected $liveEndpoint = 'https://connect.squareup.com';
+    protected $testEndpoint = 'https://connect.squareupsandbox.com';
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -70,32 +73,42 @@ class RefundRequest extends AbstractRequest
         return $this->setParameter('reason', $value);
     }
 
+    public function getEndpoint()
+    {
+        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+    }
+
+    private function getApiInstance()
+    {
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+
+        return new \SquareConnect\Api\RefundsApi($api_client);
+    }
+
     public function getData()
     {
-        $data = [];
+        $amountMoney = new \SquareConnect\Model\Money();
+        $amountMoney->setAmount($this->getAmountInteger());
+        $amountMoney->setCurrency($this->getCurrency());
 
-        $data['location_id'] = $this->getLocationId();
-        $data['transaction_id'] = $this->getTransactionId();
-        $data['body'] = new \SquareConnect\Model\CreateRefundRequest();
-        $data['body']->setIdempotencyKey($this->getIdempotencyKey());
-        $data['body']->setTenderId($this->getTenderId());
-        $data['body']->setReason($this->getReason());
-        $money = new \SquareConnect\Model\Money();
-        $money->setAmount($this->getAmountInteger());
-        $money->setCurrency($this->getCurrency());
-        $data['body']->setAmountMoney($money);
+        $data = new \SquareConnect\Model\RefundPaymentRequest();
+        $data->setPaymentId($this->getTransactionId());
+        $data->setIdempotencyKey($this->getIdempotencyKey());
+        $data->setReason($this->getReason());
+        $data->setAmountMoney($amountMoney);
 
         return $data;
     }
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\TransactionsApi();
-
         try {
-            $result = $api_instance->createRefund($data['location_id'], $data['transaction_id'], $data['body']);
+            $api_instance = $this->getApiInstance();
+
+            $result = $api_instance->refundPayment($data);
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -108,14 +121,14 @@ class RefundRequest extends AbstractRequest
                     'status' => $result->getRefund()->getStatus(),
                     'id' => $result->getRefund()->getId(),
                     'location_id' => $result->getRefund()->getLocationId(),
-                    'transaction_id' => $result->getRefund()->getTransactionId(),
-                    'tender_id' => $result->getRefund()->getTenderId(),
+                    'transaction_id' => $result->getRefund()->getPaymentId(),
+                    'tender_id' => $result->getRefund()->getOrderid(),
                     'created_at' => $result->getRefund()->getCreatedAt(),
                     'reason' => $result->getRefund()->getReason(),
                     'amount' => $result->getRefund()->getAmountMoney()->getAmount(),
                     'currency' => $result->getRefund()->getAmountMoney()->getCurrency(),
                 ];
-                $processing_fee = $result->getRefund()->getProcessingFeeMoney();
+                $processing_fee = $result->getRefund()->getProcessingFee();
                 if (!empty($processing_fee)) {
                     $response['processing_fee'] = $processing_fee->getAmount();
                 }
@@ -123,7 +136,8 @@ class RefundRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating refund: ' . $e->getMessage()
+                'detail' => 'Exception when creating refund: ' . $e->getMessage(),
+                'errors' => method_exists($e, 'getResponseBody') ? $e->getResponseBody()->errors : []
             ];
         }
 

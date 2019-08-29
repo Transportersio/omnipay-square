@@ -10,6 +10,9 @@ use SquareConnect;
  */
 class CreateCardRequest extends AbstractRequest
 {
+    protected $liveEndpoint = 'https://connect.squareup.com';
+    protected $testEndpoint = 'https://connect.squareupsandbox.com';
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -50,25 +53,36 @@ class CreateCardRequest extends AbstractRequest
         return $this->setParameter('cardholderName', $value);
     }
 
+    public function getEndpoint()
+    {
+        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+    }
+
+    private function getApiInstance()
+    {
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+
+        return new \SquareConnect\Api\CustomersApi($api_client);
+    }
+
     public function getData()
     {
-        $data = [];
-
-        $data['customer_id'] = $this->getCustomerReference();
-        $data['card_nonce'] = $this->getCard();
-        $data['cardholder_name'] = $this->getCardholderName();
+        $data = new SquareConnect\Model\CreateCustomerCardRequest();
+        $data->setCardNonce($this->getCard());
+        $data->setCardholderName($this->getCardholderName());
 
         return $data;
     }
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->createCustomerCard($data['customer_id'], $data);
+            $result = $api_instance->createCustomerCard($this->getCustomerReference(), $data);
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -80,7 +94,7 @@ class CreateCardRequest extends AbstractRequest
                 $response = [
                     'status' => 'success',
                     'card' => $result->getCard(),
-                    'customerId' => $data['customer_id']
+                    'customerId' => $this->getCustomerReference()
                 ];
             }
         } catch (\Exception $e) {

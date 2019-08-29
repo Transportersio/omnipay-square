@@ -15,6 +15,11 @@ class RefundResponse extends AbstractResponse
         return $this->data['status'] === 'APPROVED';
     }
 
+    public function isPending()
+    {
+        return $this->data['status'] === 'PENDING';
+    }
+
     public function getMessage()
     {
         $message = '';
@@ -24,6 +29,17 @@ class RefundResponse extends AbstractResponse
         if (array_key_exists('error', $this->data) && strlen($this->data['error'])) {
             $message .= $this->data['error'];
         }
+
+        if (!empty($this->data['errors'])) {
+            foreach ($this->data['errors'] as $error) {
+                $message .= $error->detail . ' ';
+            }
+        }
+
+        if ($this->isPending()) {
+            return $message .= 'Refund pending';
+        }
+
         return $message;
     }
 }
