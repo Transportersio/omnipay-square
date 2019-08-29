@@ -64,7 +64,7 @@ class ChargeRequest extends AbstractRequest
 		$required_fields = array(
 			'idempotency_key' => uniqid(),
 			'amount_money' => new SquareConnect\Model\Money(array(
-				'amount' => $this->getParameter('amount'),
+                'amount' => (int) $this->getParameter('amount'),
 				'currency' => $this->getParameter('currency')
 			)),
 			'card_nonce' => $this->getParameter('card_nonce')
