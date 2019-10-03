@@ -63,6 +63,16 @@ class CreateCustomerRequest extends AbstractRequest
         return $this->setParameter('email', $value);
     }
 
+    public function setAddress(SquareConnect\Model\Address $value)
+    {
+        return $this->setParameter('address', $value);
+    }
+
+    public function getAddress()
+    {
+        return $this->getParameter('address');
+    }
+
     public function getReferenceId()
     {
         return $this->getParameter('referenceId');
@@ -97,6 +107,8 @@ class CreateCustomerRequest extends AbstractRequest
         $data['company_name'] = $this->getCompanyName();
         $data['email_address'] = $this->getEmail();
         $data['reference_id'] = $this->getReferenceId();
+
+        $data['address'] = $this->getAddress();
 
         return $data;
     }
