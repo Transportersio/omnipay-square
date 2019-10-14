@@ -8,13 +8,15 @@
 
 namespace Omnipay\Square\Message;
 
-
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
 use SquareConnect;
 
 class UpdateCustomerRequest extends AbstractRequest
 {
+    protected $liveEndpoint = 'https://connect.squareup.com';
+    protected $testEndpoint = 'https://connect.squareupsandbox.com';
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -107,8 +109,8 @@ class UpdateCustomerRequest extends AbstractRequest
     }
 
 
-
-    public function getNote(){
+    public function getNote()
+    {
         return $this->getParameter('note');
     }
 
@@ -117,7 +119,8 @@ class UpdateCustomerRequest extends AbstractRequest
         return $this->setParameter('note', $value);
     }
 
-    public function getReferenceId(){
+    public function getReferenceId()
+    {
         return $this->getParameter('referenceId');
     }
 
@@ -125,6 +128,22 @@ class UpdateCustomerRequest extends AbstractRequest
     {
         return $this->setParameter('referenceId', $value);
     }
+
+    public function getEndpoint()
+    {
+        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+    }
+
+    private function getApiInstance()
+    {
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
+
+        return new \SquareConnect\Api\CustomersApi($api_client);
+    }
+
     /**
      * Get the raw data array for this message. The format of this varies from gateway to
      * gateway, but will usually be either an associative array, or a SimpleXMLElement.
@@ -148,18 +167,17 @@ class UpdateCustomerRequest extends AbstractRequest
 
         return $data;
     }
+
     /**
      * Send the request with specified data
      *
-     * @param  mixed $data The data to send
+     * @param mixed $data The data to send
      * @return ResponseInterface
      */
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->updateCustomer($this->getCustomerReference(), $data);
@@ -179,7 +197,7 @@ class UpdateCustomerRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating customer: ' . $e->getMessage()
+                'detail' => 'Exception when updating customer: ' . $e->getMessage()
             ];
         }
 
