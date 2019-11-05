@@ -130,7 +130,7 @@ class ChargeRequest extends AbstractRequest
 				'message' => '',
 			);
 
-			foreach ( $e->getResponseBody()->errors as $error ) {
+			foreach ( json_decode($e->getResponseBody())->errors as $error ) {
 				$response['message'] .= $error->detail . PHP_EOL;
 
                 if(!$error->code == 'CARD_DECLINED')
