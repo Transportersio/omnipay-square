@@ -132,11 +132,19 @@ class ChargeRequest extends AbstractRequest
 
 			foreach ( $e->getResponseBody()->errors as $error ) {
 				$response['message'] .= $error->detail . PHP_EOL;
+
+                if(!$error->code == 'CARD_DECLINED')
+                {
+                    report($e);
+                }
 			}
 
 			return $this->createResponse($response);
 		} catch(\Exception $e) {
-			return array(
+
+            report($e);
+
+            return array(
 				'status' => false,
 				'message' => 'Something went wrong when trying to charge you card. Please try again.',
 			);
