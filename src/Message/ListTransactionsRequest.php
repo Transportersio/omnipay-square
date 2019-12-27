@@ -89,17 +89,24 @@ class ListTransactionsRequest extends AbstractRequest
 
     public function sendData()
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
+        $defaultApiConfig = new \SquareConnect\Configuration();
+        $defaultApiConfig->setAccessToken($this->getAccessToken());
 
-        $api_instance = new SquareConnect\Api\TransactionsApi();
+        if($this->getParameter('testMode')) {
+            $defaultApiConfig->setHost("https://connect.squareupsandbox.com");
+        }
+
+        $defaultApiClient = new \SquareConnect\ApiClient($defaultApiConfig);
+
+        $api_instance = new SquareConnect\Api\PaymentsApi($defaultApiClient);
 
         try {
             $result = $api_instance->listTransactions(
-                $this->getLocationId(),
                 $this->getBeginTime(),
                 $this->getEndTime(),
                 $this->getSortOrder(),
-                $this->getCursor()
+                $this->getCursor(),
+                $this->getLocationId()
             );
 
             if ($error = $result->getErrors()) {

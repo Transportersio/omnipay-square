@@ -89,17 +89,23 @@ class ListRefundsRequest extends AbstractRequest
 
     public function sendData()
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
+        $defaultApiConfig = new \SquareConnect\Configuration();
+        $defaultApiConfig->setAccessToken($this->getAccessToken());
 
-        $api_instance = new SquareConnect\Api\TransactionsApi();
+        if($this->getParameter('testMode')) {
+            $defaultApiConfig->setHost("https://connect.squareupsandbox.com");
+        }
+
+        $defaultApiClient = new \SquareConnect\ApiClient($defaultApiConfig);
+        $api_instance = new SquareConnect\Api\RefundsApi($defaultApiClient);
 
         try {
-            $result = $api_instance->listRefunds(
-                $this->getLocationId(),
+            $result = $api_instance->listPaymentRefunds(
                 $this->getBeginTime(),
                 $this->getEndTime(),
                 $this->getSortOrder(),
-                $this->getCursor()
+                $this->getCursor(),
+                $this->getLocationId()
             );
 
             if ($error = $result->getErrors()) {
@@ -117,9 +123,8 @@ class ListRefundsRequest extends AbstractRequest
                 foreach ($refundItems as $refund) {
                     $item = new \stdClass();
                     $item->id = $refund->getId();
-                    $item->tenderId = $refund->getTenderId();
                     $item->locationId = $refund->getLocationId();
-                    $item->transactionId = $refund->getTransactionId();
+                    $item->transactionId = $refund->getPaymentId();
                     $item->createdAt = $refund->getCreatedAt();
                     $item->reason = $refund->getReason();
                     $item->status = $refund->getStatus();

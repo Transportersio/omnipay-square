@@ -130,7 +130,8 @@ class ChargeRequest extends AbstractRequest
             'amount' => $this->getAmountInteger(),
             'currency' => $this->getCurrency()
         ];
-        $data['card_nonce'] = $this->getNonce();
+        $data['location_id'] = $this->getLocationId();
+        $data['source_id'] = $this->getNonce();
         $data['customer_id'] = $this->getCustomerReference();
         $data['customer_card_id'] = $this->getCustomerCardId();
         $data['reference_id'] = $this->getReferenceId();
@@ -142,14 +143,21 @@ class ChargeRequest extends AbstractRequest
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
+        $defaultApiConfig = new \SquareConnect\Configuration();
+        $defaultApiConfig->setAccessToken($this->getAccessToken());
 
-        $api_instance = new SquareConnect\Api\TransactionsApi();
+        if($this->getParameter('testMode')) {
+            $defaultApiConfig->setHost("https://connect.squareupsandbox.com");
+        }
+
+        $defaultApiClient = new \SquareConnect\ApiClient($defaultApiConfig);
+
+        $api_instance = new SquareConnect\Api\PaymentsApi($defaultApiClient);
 
         $tenders = [];
 
         try {
-            $result = $api_instance->charge($this->getLocationId(), $data);
+            $result = $api_instance->createPayment($data);
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -158,31 +166,20 @@ class ChargeRequest extends AbstractRequest
                     'detail' => $error['detail']
                 ];
             } else {
-                $lineItems = $result->getTransaction()->getTenders();
-                if (count($lineItems) > 0) {
-                    foreach ($lineItems as $key => $value) {
-                        $tender = [];
-                        $tender['id'] = $value->getId();
-                        $tender['quantity'] = 1;
-                        $tender['amount'] = $value->getAmountMoney()->getAmount() / 100;
-                        $tender['currency'] = $value->getAmountMoney()->getCurrency();
-                        $item['note'] = $value->getNote();
-                        $tenders[] = $tender;
-                    }
-                }
                 $response = [
                     'status' => 'success',
-                    'transactionId' => $result->getTransaction()->getId(),
-                    'referenceId' => $result->getTransaction()->getReferenceId(),
-                    'created_at' => $result->getTransaction()->getCreatedAt(),
-                    'orderId' => $result->getTransaction()->getOrderId(),
-                    'tenders' => $tenders
+                    'transactionId' => $result->getPayment()->getId(),
+                    'referenceId' => $result->getPayment()->getReferenceId(),
+                    'created_at' => $result->getPayment()->getCreatedAt(),
+                    'orderId' => $result->getPayment()->getOrderId()
                 ];
             }
         } catch (\Exception $e) {
+            $error = $e->getResponseBody()->errors[0]->detail ?? $e->getMessage();
+
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating transaction: ' . $e->getMessage()
+                'detail' => 'Exception when creating transaction: ' . $error
             ];
         }
 
