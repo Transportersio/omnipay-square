@@ -151,6 +151,7 @@ class ChargeRequest extends AbstractRequest
         $data->setIdempotencyKey($this->getIdempotencyKey());
         $data->setAmountMoney($amountMoney);
         $data->setLocationId($this->getLocationId());
+        $data->setNote($this->getNote());
 
         return $data;
     }
