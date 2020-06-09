@@ -18,10 +18,12 @@ to your `composer.json` file:
 ```json
 {
     "require": {
-        "transportersio/omnipay-square": "~1.0.7"
+        "transportersio/omnipay-square": "~2.0.0"
     }
 }
 ```
+
+For omnipay v2 use tag 1.0.5 instead.
 
 And run composer to update your dependencies:
 
