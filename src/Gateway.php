@@ -23,6 +23,7 @@ class Gateway extends AbstractGateway
         return [
             'accessToken' => '',
             'locationId' => '',
+            'testMode' => false
         ];
     }
 
@@ -69,6 +70,21 @@ class Gateway extends AbstractGateway
     public function setAppId($value)
     {
         return $this->setParameter('appId', $value);
+    }
+
+    /**
+     * Test Mode getters and setters
+     * @return mixed
+     */
+
+    public function getTestMode()
+    {
+        return $this->getParameter('testMode');
+    }
+
+    public function setTestMode($value)
+    {
+        return $this->setParameter('testMode', $value);
     }
 
 

@@ -74,28 +74,31 @@ class RefundRequest extends AbstractRequest
     {
         $data = [];
 
-        $data['location_id'] = $this->getLocationId();
-        $data['transaction_id'] = $this->getTransactionId();
-        $data['body'] = new \SquareConnect\Model\CreateRefundRequest();
-        $data['body']->setIdempotencyKey($this->getIdempotencyKey());
-        $data['body']->setTenderId($this->getTenderId());
-        $data['body']->setReason($this->getReason());
-        $money = new \SquareConnect\Model\Money();
-        $money->setAmount($this->getAmountInteger());
-        $money->setCurrency($this->getCurrency());
-        $data['body']->setAmountMoney($money);
+        $data['idempotency_key'] = uniqid();
+        $data['payment_id'] = $this->getTransactionId();
+        $data['reason'] = $this->getReason();
+        $data['amount_money'] = [
+            'amount' => $this->getAmountInteger(),
+            'currency' => $this->getCurrency()
+        ];
 
         return $data;
     }
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
+        $defaultApiConfig = new \SquareConnect\Configuration();
+        $defaultApiConfig->setAccessToken($this->getAccessToken());
 
-        $api_instance = new SquareConnect\Api\TransactionsApi();
+        if($this->getParameter('testMode')) {
+            $defaultApiConfig->setHost("https://connect.squareupsandbox.com");
+        }
+
+        $defaultApiClient = new \SquareConnect\ApiClient($defaultApiConfig);
+        $api_instance = new SquareConnect\Api\RefundsApi($defaultApiClient);
 
         try {
-            $result = $api_instance->createRefund($data['location_id'], $data['transaction_id'], $data['body']);
+            $result = $api_instance->refundPayment($data);
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -107,18 +110,17 @@ class RefundRequest extends AbstractRequest
                 $response = [
                     'status' => $result->getRefund()->getStatus(),
                     'id' => $result->getRefund()->getId(),
-                    'location_id' => $result->getRefund()->getLocationId(),
-                    'transaction_id' => $result->getRefund()->getTransactionId(),
-                    'tender_id' => $result->getRefund()->getTenderId(),
+                    'transaction_id' => $result->getRefund()->getPaymentId(),
                     'created_at' => $result->getRefund()->getCreatedAt(),
                     'reason' => $result->getRefund()->getReason(),
                     'amount' => $result->getRefund()->getAmountMoney()->getAmount(),
                     'currency' => $result->getRefund()->getAmountMoney()->getCurrency(),
                 ];
-                $processing_fee = $result->getRefund()->getProcessingFeeMoney();
+                $processing_fee = $result->getRefund()->getProcessingFee();
                 if (!empty($processing_fee)) {
                     $response['processing_fee'] = $processing_fee->getAmount();
                 }
+
             }
         } catch (\Exception $e) {
             $response = [
