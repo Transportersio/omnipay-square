@@ -3,16 +3,14 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square Create Customer Request
  */
 class CreateCustomerRequest extends AbstractRequest
 {
-    protected $liveEndpoint = 'https://connect.squareup.com';
-    protected $testEndpoint = 'https://connect.squareupsandbox.com';
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -63,7 +61,7 @@ class CreateCustomerRequest extends AbstractRequest
         return $this->setParameter('email', $value);
     }
 
-    public function setAddress(SquareConnect\Model\Address $value)
+    public function setAddress(\Square\Models\Address $value)
     {
         return $this->setParameter('address', $value);
     }
@@ -83,32 +81,30 @@ class CreateCustomerRequest extends AbstractRequest
         return $this->setParameter('referenceId', $value);
     }
 
-    public function getEndpoint()
+    public function getEnvironment()
     {
-        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
     }
 
     private function getApiInstance()
     {
-        $api_config = new \SquareConnect\Configuration();
-        $api_config->setHost($this->getEndpoint());
-        $api_config->setAccessToken($this->getAccessToken());
-        $api_client = new \SquareConnect\ApiClient($api_config);
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
 
-        return new \SquareConnect\Api\CustomersApi($api_client);
+        return $api_client->getCustomersApi();
     }
 
     public function getData()
     {
-        $data = [];
-
-        $data['given_name'] = $this->getFirstName();
-        $data['family_name'] = $this->getLastName();
-        $data['company_name'] = $this->getCompanyName();
-        $data['email_address'] = $this->getEmail();
-        $data['reference_id'] = $this->getReferenceId();
-
-        $data['address'] = $this->getAddress();
+        $data = new \Square\Models\CreateCustomerRequest();
+        $data->setGivenName($this->getFirstName());
+        $data->setFamilyName($this->getLastName());
+        $data->setCompanyName($this->getCompanyName());
+        $data->setEmailAddress($this->getEmail());
+        $data->setReferenceId($this->getReferenceId());
+        $data->setAddress($this->getAddress());
 
         return $data;
     }
@@ -129,7 +125,7 @@ class CreateCustomerRequest extends AbstractRequest
             } else {
                 $response = [
                     'status' => 'success',
-                    'customer' => $result->getCustomer()
+                    'customer' => $result->getResult()->getCustomer()
                 ];
             }
         } catch (\Exception $e) {

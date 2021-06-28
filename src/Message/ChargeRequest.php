@@ -5,8 +5,6 @@ namespace Omnipay\Square\Message;
 use Omnipay\Common\Message\AbstractRequest;
 use Square\Environment;
 use Square\SquareClient;
-use Square\Models\CreatePaymentRequest;
-use Square\Models\Money;
 
 /**
  * Square Purchase Request
@@ -77,7 +75,6 @@ class ChargeRequest extends AbstractRequest
     {
         return $this->setParameter('customerReference', $value);
     }
-
 
     public function getCustomerReference()
     {
@@ -151,12 +148,12 @@ class ChargeRequest extends AbstractRequest
 
     public function getData()
     {
-        $amountMoney = new Money();
+        $amountMoney = new \Square\Models\Money();
         $amountMoney->setAmount($this->getAmountInteger());
         $amountMoney->setCurrency($this->getCurrency());
 
         $sourceId = $this->getNonce() ?? $this->getCustomerCardId();
-        $data = new CreatePaymentRequest($sourceId, $this->getIdempotencyKey(), $amountMoney);
+        $data = new \Square\Models\CreatePaymentRequest($sourceId, $this->getIdempotencyKey(), $amountMoney);
         $data->setCustomerId($this->getCustomerReference());
         $data->setLocationId($this->getLocationId());
         $data->setNote($this->getNote());
