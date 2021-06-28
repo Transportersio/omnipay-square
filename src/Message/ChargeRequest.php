@@ -126,12 +126,12 @@ class ChargeRequest extends AbstractRequest
 
     public function getVerificationToken()
     {
-        return $this->getParameter('verification_token');
+        return $this->getParameter('verificationToken');
     }
 
     public function setVerificationToken($verificationToken)
     {
-        return $this->setParameter('verification_token', $verificationToken);
+        return $this->setParameter('verificationToken', $verificationToken);
     }
 
     public function getEnvironment()
