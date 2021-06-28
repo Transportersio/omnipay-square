@@ -124,6 +124,16 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('note', $value);
     }
 
+    public function getVerificationToken()
+    {
+        return $this->getParameter('verification_token');
+    }
+
+    public function setVerificationToken($verificationToken)
+    {
+        return $this->setParameter('verification_token', $verificationToken);
+    }
+
     public function getEnvironment()
     {
         return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
@@ -150,6 +160,10 @@ class ChargeRequest extends AbstractRequest
         $data->setCustomerId($this->getCustomerReference());
         $data->setLocationId($this->getLocationId());
         $data->setNote($this->getNote());
+
+        if ($this->getVerificationToken()) {
+            $data->setVerificationToken($this->getVerificationToken());
+        }
 
         return $data;
     }
