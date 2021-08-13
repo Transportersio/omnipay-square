@@ -10,6 +10,9 @@ use SquareConnect;
  */
 class ListTransactionsRequest extends AbstractRequest
 {
+    protected $liveEndpoint = 'https://connect.squareup.com';
+    protected $testEndpoint = 'https://connect.squareupsandbox.com';
+
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -70,6 +73,11 @@ class ListTransactionsRequest extends AbstractRequest
         return $this->setParameter('cursor', $value);
     }
 
+    public function getEndpoint()
+    {
+        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+    }
+
     /*
     public function getCheckoutId()
     {
@@ -87,20 +95,29 @@ class ListTransactionsRequest extends AbstractRequest
         return [];
     }
 
-    public function sendData()
+    private function getApiInstance()
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
+        $api_config = new \SquareConnect\Configuration();
+        $api_config->setHost($this->getEndpoint());
+        $api_config->setAccessToken($this->getAccessToken());
+        $api_client = new \SquareConnect\ApiClient($api_config);
 
-        $api_instance = new SquareConnect\Api\TransactionsApi();
+        return new \SquareConnect\Api\TransactionsApi($api_client);
+    }
+
+    public function sendData($data)
+    {
+        /** @var SquareConnect\Api\TransactionsApi $api_instance */
+        $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->listTransactions(
+            $result = $api_instance->listTransactionsWithHttpInfo(
                 $this->getLocationId(),
                 $this->getBeginTime(),
                 $this->getEndTime(),
                 $this->getSortOrder(),
                 $this->getCursor()
-            );
+            )[0];
 
             if ($error = $result->getErrors()) {
                 $response = [
