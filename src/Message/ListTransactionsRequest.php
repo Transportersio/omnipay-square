@@ -3,16 +3,14 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square List Transactions Request
  */
 class ListTransactionsRequest extends AbstractRequest
 {
-    protected $liveEndpoint = 'https://connect.squareup.com';
-    protected $testEndpoint = 'https://connect.squareupsandbox.com';
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -73,51 +71,38 @@ class ListTransactionsRequest extends AbstractRequest
         return $this->setParameter('cursor', $value);
     }
 
-    public function getEndpoint()
+    public function getEnvironment()
     {
-        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
     }
 
-    /*
-    public function getCheckoutId()
+    private function getApiInstance()
     {
-    return $this->getParameter('checkOutId');
-    }
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
 
-    public function setCheckoutId($value)
-    {
-    return $this->setParameter('checkOutId', $value);
+        return $api_client->getTransactionsApi();
     }
-    */
 
     public function getData()
     {
         return [];
     }
 
-    private function getApiInstance()
+    public function sendData($data = '')
     {
-        $api_config = new \SquareConnect\Configuration();
-        $api_config->setHost($this->getEndpoint());
-        $api_config->setAccessToken($this->getAccessToken());
-        $api_client = new \SquareConnect\ApiClient($api_config);
-
-        return new \SquareConnect\Api\TransactionsApi($api_client);
-    }
-
-    public function sendData($data)
-    {
-        /** @var SquareConnect\Api\TransactionsApi $api_instance */
         $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->listTransactionsWithHttpInfo(
+            $result = $api_instance->listTransactions(
                 $this->getLocationId(),
                 $this->getBeginTime(),
                 $this->getEndTime(),
                 $this->getSortOrder(),
                 $this->getCursor()
-            )[0];
+            );
 
             if ($error = $result->getErrors()) {
                 $response = [
@@ -127,7 +112,7 @@ class ListTransactionsRequest extends AbstractRequest
                 ];
             } else {
                 $transactions = [];
-                $transactionList = $result->getTransactions();
+                $transactionList = $result->getResult()->getTransactions();
                 if ($transactionList === null) {
                     $transactionList = [];
                 }

@@ -3,16 +3,14 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square Purchase Request
  */
 class ChargeRequest extends AbstractRequest
 {
-    protected $liveEndpoint = 'https://connect.squareup.com';
-    protected $testEndpoint = 'https://connect.squareupsandbox.com';
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -78,7 +76,6 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('customerReference', $value);
     }
 
-
     public function getCustomerReference()
     {
         return $this->getParameter('customerReference');
@@ -124,34 +121,46 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('note', $value);
     }
 
-    public function getEndpoint()
+    public function getVerificationToken()
     {
-        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+        return $this->getParameter('verificationToken');
+    }
+
+    public function setVerificationToken($verificationToken)
+    {
+        return $this->setParameter('verificationToken', $verificationToken);
+    }
+
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
     }
 
     private function getApiInstance()
     {
-        $api_config = new \SquareConnect\Configuration();
-        $api_config->setHost($this->getEndpoint());
-        $api_config->setAccessToken($this->getAccessToken());
-        $api_client = new \SquareConnect\ApiClient($api_config);
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
 
-        return new \SquareConnect\Api\PaymentsApi($api_client);
+        return $api_client->getPaymentsApi();
     }
 
     public function getData()
     {
-        $amountMoney = new \SquareConnect\Model\Money();
+        $amountMoney = new \Square\Models\Money();
         $amountMoney->setAmount($this->getAmountInteger());
         $amountMoney->setCurrency($this->getCurrency());
 
-        $data = new SquareConnect\Model\CreatePaymentRequest();
-        $data->setSourceId($this->getNonce() ?? $this->getCustomerCardId());
+        $sourceId = $this->getNonce() ?? $this->getCustomerCardId();
+        $data = new \Square\Models\CreatePaymentRequest($sourceId, $this->getIdempotencyKey(), $amountMoney);
         $data->setCustomerId($this->getCustomerReference());
-        $data->setIdempotencyKey($this->getIdempotencyKey());
-        $data->setAmountMoney($amountMoney);
         $data->setLocationId($this->getLocationId());
         $data->setNote($this->getNote());
+
+        if ($this->getVerificationToken()) {
+            $data->setVerificationToken($this->getVerificationToken());
+        }
 
         return $data;
     }
@@ -172,10 +181,10 @@ class ChargeRequest extends AbstractRequest
             } else {
                 $response = [
                     'status' => 'success',
-                    'transactionId' => $result->getPayment()->getId(),
-                    'referenceId' => $result->getPayment()->getReferenceId(),
-                    'created_at' => $result->getPayment()->getCreatedAt(),
-                    'orderId' => $result->getPayment()->getOrderId()
+                    'transactionId' => $result->getResult()->getPayment()->getId(),
+                    'referenceId' => $result->getResult()->getPayment()->getReferenceId(),
+                    'created_at' => $result->getResult()->getPayment()->getCreatedAt(),
+                    'orderId' => $result->getResult()->getPayment()->getOrderId()
                 ];
             }
         } catch (\Exception $e) {

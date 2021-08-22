@@ -4,13 +4,11 @@ namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 class FetchCustomerRequest extends AbstractRequest
 {
-    protected $liveEndpoint = 'https://connect.squareup.com';
-    protected $testEndpoint = 'https://connect.squareupsandbox.com';
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -31,19 +29,19 @@ class FetchCustomerRequest extends AbstractRequest
         return $this->getParameter('customerReference');
     }
 
-    public function getEndpoint()
+    public function getEnvironment()
     {
-        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
     }
 
     private function getApiInstance()
     {
-        $api_config = new \SquareConnect\Configuration();
-        $api_config->setHost($this->getEndpoint());
-        $api_config->setAccessToken($this->getAccessToken());
-        $api_client = new \SquareConnect\ApiClient($api_config);
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
 
-        return new \SquareConnect\Api\CustomersApi($api_client);
+        return $api_client->getCustomersApi();
     }
 
     public function getData()
@@ -71,7 +69,7 @@ class FetchCustomerRequest extends AbstractRequest
             } else {
                 $response = [
                     'status' => 'success',
-                    'customer' => $result->getCustomer()
+                    'customer' => $result->getResult()->getCustomer()
                 ];
             }
         } catch (\Exception $e) {

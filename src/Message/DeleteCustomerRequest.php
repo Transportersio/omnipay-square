@@ -1,17 +1,11 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: Dylan
- * Date: 16/04/2019
- * Time: 3:50 PM
- */
 
 namespace Omnipay\Square\Message;
 
-
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 class DeleteCustomerRequest extends AbstractRequest
 {
@@ -30,16 +24,25 @@ class DeleteCustomerRequest extends AbstractRequest
         return $this->setParameter('customerReference', $value);
     }
 
-
     public function getCustomerReference(){
         return $this->getParameter('customerReference');
     }
-    /**
-     * Get the raw data array for this message. The format of this varies from gateway to
-     * gateway, but will usually be either an associative array, or a SimpleXMLElement.
-     *
-     * @return mixed
-     */
+
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getCustomersApi();
+    }
+
     public function getData()
     {
         $data = [];
@@ -49,17 +52,9 @@ class DeleteCustomerRequest extends AbstractRequest
         return $data;
     }
 
-    /**
-     * Send the request with specified data
-     *
-     * @param  mixed $data The data to send
-     * @return ResponseInterface
-     */
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->deleteCustomer($data['customer_id']);

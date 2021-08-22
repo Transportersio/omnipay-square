@@ -3,16 +3,14 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square Refund Request
  */
 class RefundRequest extends AbstractRequest
 {
-    protected $liveEndpoint = 'https://connect.squareup.com';
-    protected $testEndpoint = 'https://connect.squareupsandbox.com';
-
     public function getAccessToken()
     {
         return $this->getParameter('accessToken');
@@ -73,32 +71,29 @@ class RefundRequest extends AbstractRequest
         return $this->setParameter('reason', $value);
     }
 
-    public function getEndpoint()
+    public function getEnvironment()
     {
-        return $this->getTestMode() === true ? $this->testEndpoint : $this->liveEndpoint;
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
     }
 
     private function getApiInstance()
     {
-        $api_config = new \SquareConnect\Configuration();
-        $api_config->setHost($this->getEndpoint());
-        $api_config->setAccessToken($this->getAccessToken());
-        $api_client = new \SquareConnect\ApiClient($api_config);
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
 
-        return new \SquareConnect\Api\RefundsApi($api_client);
+        return $api_client->getRefundsApi();
     }
 
     public function getData()
     {
-        $amountMoney = new \SquareConnect\Model\Money();
+        $amountMoney = new \Square\Models\Money();
         $amountMoney->setAmount($this->getAmountInteger());
         $amountMoney->setCurrency($this->getCurrency());
 
-        $data = new \SquareConnect\Model\RefundPaymentRequest();
-        $data->setPaymentId($this->getTransactionId());
-        $data->setIdempotencyKey($this->getIdempotencyKey());
+        $data = new \Square\Models\RefundPaymentRequest($this->getIdempotencyKey(), $amountMoney, $this->getTransactionId());
         $data->setReason($this->getReason());
-        $data->setAmountMoney($amountMoney);
 
         return $data;
     }
@@ -118,17 +113,17 @@ class RefundRequest extends AbstractRequest
                 ];
             } else {
                 $response = [
-                    'status' => $result->getRefund()->getStatus(),
-                    'id' => $result->getRefund()->getId(),
-                    'location_id' => $result->getRefund()->getLocationId(),
-                    'transaction_id' => $result->getRefund()->getPaymentId(),
-                    'tender_id' => $result->getRefund()->getOrderid(),
-                    'created_at' => $result->getRefund()->getCreatedAt(),
-                    'reason' => $result->getRefund()->getReason(),
-                    'amount' => $result->getRefund()->getAmountMoney()->getAmount(),
-                    'currency' => $result->getRefund()->getAmountMoney()->getCurrency(),
+                    'status' => $result->getResult()->getRefund()->getStatus(),
+                    'id' => $result->getResult()->getRefund()->getId(),
+                    'location_id' => $result->getResult()->getRefund()->getLocationId(),
+                    'transaction_id' => $result->getResult()->getRefund()->getPaymentId(),
+                    'tender_id' => $result->getResult()->getRefund()->getOrderid(),
+                    'created_at' => $result->getResult()->getRefund()->getCreatedAt(),
+                    'reason' => $result->getResult()->getRefund()->getReason(),
+                    'amount' => $result->getResult()->getRefund()->getAmountMoney()->getAmount(),
+                    'currency' => $result->getResult()->getRefund()->getAmountMoney()->getCurrency(),
                 ];
-                $processing_fee = $result->getRefund()->getProcessingFee();
+                $processing_fee = $result->getResult()->getRefund()->getProcessingFee();
                 if (!empty($processing_fee)) {
                     $response['processing_fee'] = $processing_fee->getAmount();
                 }
