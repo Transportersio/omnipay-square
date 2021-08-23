@@ -5,6 +5,7 @@ namespace Omnipay\Square\Message;
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
 use Square\Environment;
+use Square\Models\Address;
 use Square\SquareClient;
 
 class UpdateCustomerRequest extends AbstractRequest

@@ -4,6 +4,7 @@ namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
+use Square\Models\Customer;
 
 /**
  * Square Purchase Response
@@ -26,13 +27,12 @@ class CustomerResponse extends AbstractResponse implements RedirectResponseInter
         return $this->data['code'];
     }
 
-    public function getCustomer()
+    public function getCustomer(): ?Customer
     {
-        if(isset($this->data['customer'])){
-            if(!empty($this->data['customer'])){
-                return $this->data['customer'];
-            }
+        if(!empty($this->data['customer'])){
+            return $this->data['customer'];
         }
+
         return null;
     }
 
