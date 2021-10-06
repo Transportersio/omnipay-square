@@ -27,7 +27,7 @@
     },
     "require": {
         "omnipay/common": "~3.0",
-        "square/square": "12.0.0.20210616"
+        "square/square": "14.1.0.20210915"
     },
     "require-dev": {
         "omnipay/tests": "~3.0"
