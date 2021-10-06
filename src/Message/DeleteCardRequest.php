@@ -20,16 +20,6 @@ class DeleteCardRequest extends AbstractRequest
         return $this->setParameter('accessToken', $value);
     }
 
-    public function setCustomerReference($value)
-    {
-        return $this->setParameter('customerReference', $value);
-    }
-
-    public function getCustomerReference()
-    {
-        return $this->getParameter('customerReference');
-    }
-
     public function getLocationId()
     {
         return $this->getParameter('locationId');
@@ -62,14 +52,13 @@ class DeleteCardRequest extends AbstractRequest
             'environment' => $this->getEnvironment()
         ]);
 
-        return $api_client->getCustomersApi();
+        return $api_client->getCardsApi();
     }
 
     public function getData()
     {
         $data = [];
 
-        $data['customer_id'] = $this->getCustomerReference();
         $data['card_id'] = $this->getCardReference();
 
         return $data;
@@ -80,7 +69,7 @@ class DeleteCardRequest extends AbstractRequest
         $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->deleteCustomerCard($data['customer_id'], $data['card_id']);
+            $result = $api_instance->disableCard($data['card_id']);
 
             if ($errors = $result->getErrors()) {
                 $response = [
@@ -98,7 +87,7 @@ class DeleteCardRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating card: ' . $e->getMessage()
+                'detail' => 'Exception when disabling card: ' . $e->getMessage()
             ];
         }
 
