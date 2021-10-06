@@ -104,11 +104,13 @@ class ListRefundsRequest extends AbstractRequest
                 $this->getCursor()
             );
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $refunds = [];

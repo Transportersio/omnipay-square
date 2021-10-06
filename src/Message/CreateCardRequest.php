@@ -3,7 +3,10 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
+use Square\Apis\CardsApi;
 use Square\Environment;
+use Square\Models\Card;
+use Square\Models\CreateCardRequest as CreateSquareCardRequest;
 use Square\SquareClient;
 
 /**
@@ -63,29 +66,36 @@ class CreateCardRequest extends AbstractRequest
             'environment' => $this->getEnvironment()
         ]);
 
-        return $api_client->getCustomersApi();
+        return $api_client->getCardsApi();
     }
 
     public function getData()
     {
-        $data = new \Square\Models\CreateCustomerCardRequest($this->getCard());
-        $data->setCardholderName($this->getCardholderName());
+        $idempotencyKey = uniqid();
+        $sourceId = $this->getCard(); // Card nonce
+        $card = new Card;
+        $card->setCustomerId($this->getCustomerReference());
+
+        $data = new CreateSquareCardRequest($idempotencyKey, $sourceId, $card);
 
         return $data;
     }
 
     public function sendData($data)
     {
+        /** @var CardsApi $api_instance */
         $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->createCustomerCard($this->getCustomerReference(), $data);
+            $result = $api_instance->createCard($data);
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $response = [

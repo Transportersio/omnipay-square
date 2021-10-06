@@ -5,6 +5,7 @@ namespace Omnipay\Square\Message;
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
 use Square\Environment;
+use Square\Models\Address;
 use Square\SquareClient;
 
 class UpdateCustomerRequest extends AbstractRequest
@@ -171,11 +172,13 @@ class UpdateCustomerRequest extends AbstractRequest
         try {
             $result = $api_instance->updateCustomer($this->getCustomerReference(), $data);
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $response = [

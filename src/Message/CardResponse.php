@@ -4,6 +4,7 @@ namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\RedirectResponseInterface;
+use Square\Models\Card;
 
 /**
  * Square Purchase Response
@@ -26,23 +27,21 @@ class CardResponse extends AbstractResponse implements RedirectResponseInterface
         return $this->data['code'];
     }
 
-    public function getCard()
+    public function getCard(): ?Card
     {
-        if(isset($this->data['card'])){
-            if(!empty($this->data['card'])){
-                return $this->data['card'];
-            }
+        if(!empty($this->data['card'])) {
+            return $this->data['card'];
         }
+
         return null;
     }
 
-    public function getCardReference()
+    public function getCardReference(): ?string
     {
-        if(isset($this->data['card'])){
-            if(!empty($this->data['card'])){
-                return $this->data['card']['id'];
-            }
+        if(!empty($this->data['card'])) {
+            return $this->data['card']->getId();
         }
+
         return null;
     }
 }
