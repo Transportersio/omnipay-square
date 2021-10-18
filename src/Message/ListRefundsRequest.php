@@ -83,7 +83,7 @@ class ListRefundsRequest extends AbstractRequest
             'environment' => $this->getEnvironment()
         ]);
 
-        return $api_client->getTransactionsApi();
+        return $api_client->getRefundsApi();
     }
 
     public function getData()
@@ -96,12 +96,12 @@ class ListRefundsRequest extends AbstractRequest
         $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->listRefunds(
-                $this->getLocationId(),
+            $result = $api_instance->listPaymentRefunds(
                 $this->getBeginTime(),
                 $this->getEndTime(),
                 $this->getSortOrder(),
-                $this->getCursor()
+                $this->getCursor(),
+                $this->getLocationId()
             );
 
             if ($errors = $result->getErrors()) {
@@ -141,7 +141,7 @@ class ListRefundsRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when calling TransactionsApi->listRefunds: ' . $e->getMessage()
+                'detail' => 'Exception when calling RefundsApi->listPaymentRefunds: ' . $e->getMessage()
             ];
         }
 
