@@ -104,6 +104,21 @@ class Gateway extends AbstractGateway
     }
 
     /**
+     * Nonce getters and setters
+     * @return mixed
+     */
+
+    public function getNonce()
+    {
+        return $this->getParameter('nonce');
+    }
+
+    public function setNonce($value)
+    {
+        return $this->setParameter('nonce', $value);
+    }
+    
+    /**
      * Purchase request functions
      * @param array $parameters
      * @return \Omnipay\Common\Message\AbstractRequest|\Omnipay\Common\Message\RequestInterface
