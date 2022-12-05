@@ -3,7 +3,8 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square Refund Request
@@ -70,53 +71,61 @@ class RefundRequest extends AbstractRequest
         return $this->setParameter('reason', $value);
     }
 
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getRefundsApi();
+    }
+
     public function getData()
     {
-        $data = [];
+        $amountMoney = new \Square\Models\Money();
+        $amountMoney->setAmount($this->getAmountInteger());
+        $amountMoney->setCurrency($this->getCurrency());
 
-        $data['idempotency_key'] = uniqid();
-        $data['payment_id'] = $this->getTransactionId();
-        $data['reason'] = $this->getReason();
-        $data['amount_money'] = [
-            'amount' => $this->getAmountInteger(),
-            'currency' => $this->getCurrency()
-        ];
+        $data = new \Square\Models\RefundPaymentRequest($this->getIdempotencyKey(), $amountMoney, $this->getTransactionId());
+        $data->setReason($this->getReason());
 
         return $data;
     }
 
     public function sendData($data)
     {
-        $defaultApiConfig = new \SquareConnect\Configuration();
-        $defaultApiConfig->setAccessToken($this->getAccessToken());
-
-        if($this->getParameter('testMode')) {
-            $defaultApiConfig->setHost("https://connect.squareupsandbox.com");
-        }
-
-        $defaultApiClient = new \SquareConnect\ApiClient($defaultApiConfig);
-        $api_instance = new SquareConnect\Api\RefundsApi($defaultApiClient);
-
         try {
+            $api_instance = $this->getApiInstance();
+
             $result = $api_instance->refundPayment($data);
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $response = [
-                    'status' => $result->getRefund()->getStatus(),
-                    'id' => $result->getRefund()->getId(),
-                    'transaction_id' => $result->getRefund()->getPaymentId(),
-                    'created_at' => $result->getRefund()->getCreatedAt(),
-                    'reason' => $result->getRefund()->getReason(),
-                    'amount' => $result->getRefund()->getAmountMoney()->getAmount(),
-                    'currency' => $result->getRefund()->getAmountMoney()->getCurrency(),
+                    'status' => $result->getResult()->getRefund()->getStatus(),
+                    'id' => $result->getResult()->getRefund()->getId(),
+                    'location_id' => $result->getResult()->getRefund()->getLocationId(),
+                    'transaction_id' => $result->getResult()->getRefund()->getPaymentId(),
+                    'tender_id' => $result->getResult()->getRefund()->getOrderid(),
+                    'created_at' => $result->getResult()->getRefund()->getCreatedAt(),
+                    'reason' => $result->getResult()->getRefund()->getReason(),
+                    'amount' => $result->getResult()->getRefund()->getAmountMoney()->getAmount(),
+                    'currency' => $result->getResult()->getRefund()->getAmountMoney()->getCurrency(),
                 ];
-                $processing_fee = $result->getRefund()->getProcessingFee();
+                $processing_fee = $result->getResult()->getRefund()->getProcessingFee();
                 if (!empty($processing_fee)) {
                     $response['processing_fee'] = $processing_fee->getAmount();
                 }
@@ -125,7 +134,8 @@ class RefundRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating refund: ' . $e->getMessage()
+                'detail' => 'Exception when creating refund: ' . $e->getMessage(),
+                'errors' => method_exists($e, 'getResponseBody') ? $e->getResponseBody()->errors : []
             ];
         }
 
