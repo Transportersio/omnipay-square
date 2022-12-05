@@ -3,7 +3,8 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square Purchase Request
@@ -51,6 +52,21 @@ class TransactionRequest extends AbstractRequest
         return $this->setParameter('transactionId', $value);
     }
 
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getTransactionsApi();
+    }
+
     public function getData()
     {
         $data = [];
@@ -63,16 +79,14 @@ class TransactionRequest extends AbstractRequest
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\TransactionsApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->retrieveTransaction($this->getLocationId(), $data['transactionId']);
 
             $orders = [];
 
-            $lineItems = $result->getTransaction()->getTenders();
+            $lineItems = $result->getResult()->getTransaction()->getTenders();
             if (count($lineItems) > 0) {
                 foreach ($lineItems as $key => $value) {
                     $data = [];
@@ -83,24 +97,26 @@ class TransactionRequest extends AbstractRequest
                 }
             }
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $response = [
                     'status' => 'success',
-                    'transactionId' => $result->getTransaction()->getId(),
-                    'referenceId' => $result->getTransaction()->getReferenceId(),
+                    'transactionId' => $result->getResult()->getTransaction()->getId(),
+                    'referenceId' => $result->getResult()->getTransaction()->getReferenceId(),
                     'orders' => $orders
                 ];
             }
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when calling LocationsApi->listLocations: ', $e->getMessage()
+                'detail' => 'Exception when calling LocationsApi->listLocations: ' . $e->getMessage()
             ];
         }
 

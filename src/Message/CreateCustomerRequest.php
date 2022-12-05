@@ -3,7 +3,8 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square Create Customer Request
@@ -60,37 +61,73 @@ class CreateCustomerRequest extends AbstractRequest
         return $this->setParameter('email', $value);
     }
 
+    public function setAddress(\Square\Models\Address $value)
+    {
+        return $this->setParameter('address', $value);
+    }
+
+    public function getAddress()
+    {
+        return $this->getParameter('address');
+    }
+
+    public function getReferenceId()
+    {
+        return $this->getParameter('referenceId');
+    }
+
+    public function setReferenceId($value)
+    {
+        return $this->setParameter('referenceId', $value);
+    }
+
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getCustomersApi();
+    }
+
     public function getData()
     {
-        $data = [];
-
-        $data['given_name'] = $this->getFirstName();
-        $data['family_name'] = $this->getLastName();
-        $data['company_name'] = $this->getCompanyName();
-        $data['email_address'] = $this->getEmail();
+        $data = new \Square\Models\CreateCustomerRequest();
+        $data->setGivenName($this->getFirstName());
+        $data->setFamilyName($this->getLastName());
+        $data->setCompanyName($this->getCompanyName());
+        $data->setEmailAddress($this->getEmail());
+        $data->setReferenceId($this->getReferenceId());
+        $data->setAddress($this->getAddress());
 
         return $data;
     }
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->createCustomer($data);
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $response = [
                     'status' => 'success',
-                    'customer' => $result->getCustomer()
+                    'customer' => $result->getResult()->getCustomer()
                 ];
             }
         } catch (\Exception $e) {

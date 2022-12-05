@@ -3,7 +3,8 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square Purchase Request
@@ -30,6 +31,21 @@ class WebPaymentRequest extends AbstractRequest
         return $this->setParameter('locationId', $value);
     }
 
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getCheckoutApi();
+    }
+
     public function getData()
     {
         $items = $this->getItems();
@@ -38,45 +54,37 @@ class WebPaymentRequest extends AbstractRequest
 
         if (!empty($items) && count($items) > 0) {
             foreach ($items as $index => $item) {
-                $items_list[$index] = new SquareConnect\Model\OrderLineItem(
-                    [
-                        'name' => $item->getName(),
-                        'quantity' => (string) $item->getQuantity(),
-                        'base_price_money' => new SquareConnect\Model\Money(
-                            [
-                                'amount' => $item->getPrice() * 100,
-                                'currency' => $this->getCurrency()
-                            ]
-                        )
-                    ]
-                );
+                $base_price_money = new \Square\Models\Money();
+                $base_price_money->setAmount($item->getPrice() * 100);
+                $base_price_money->setCurrency($this->getCurrency());
+
+                $items_list[$index] = new \Square\Models\OrderLineItem((string) $item->getQuantity());
+                $items_list[$index]->setName($item->getName());
+                $items_list[$index]->setBasePriceMoney($base_price_money);
             }
         }
 
-        $data_array = [
-            'idempotency_key' => uniqid(),
-            'order' => new SquareConnect\Model\Order([
-                'reference_id' => $this->getTransactionReference(),
-                'line_items' => $items_list
-            ]),
-            'ask_for_shipping_address' => false,
-            'redirect_url' => $this->getReturnUrl()
-        ];
+        $order = new \Square\Models\Order($this->getLocationId());
+        $order->setReferenceId($this->getTransactionReference());
+        $order->setLineItems($items_list);
 
-        $data = new \SquareConnect\Model\CreateCheckoutRequest($data_array);
+        $order_request = new \Square\Models\CreateOrderRequest();
+        $order_request->setOrder($order);
+
+        $data = new \Square\Models\CreateCheckoutRequest(uniqid(), $order_request);
+        $data->setAskForShippingAddress(false);
+        $data->setRedirectUrl($this->getReturnUrl());
 
         return $data;
     }
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CheckoutApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->createCheckout($this->getLocationId(), $data);
-            $result = $result->getCheckout();
+            $result = $result->getResult()->getCheckout();
             $response = [
                 'id' => $result->getId(),
                 'checkout_url' => $result->getCheckoutPageUrl()

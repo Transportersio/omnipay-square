@@ -3,7 +3,11 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Apis\CardsApi;
+use Square\Environment;
+use Square\Models\Card;
+use Square\Models\CreateCardRequest as CreateSquareCardRequest;
+use Square\SquareClient;
 
 /**
  * Square Create Credit Card Request
@@ -50,37 +54,54 @@ class CreateCardRequest extends AbstractRequest
         return $this->setParameter('cardholderName', $value);
     }
 
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getCardsApi();
+    }
+
     public function getData()
     {
-        $data = [];
+        $idempotencyKey = uniqid();
+        $sourceId = $this->getCard(); // Card nonce
+        $card = new Card;
+        $card->setCustomerId($this->getCustomerReference());
 
-        $data['customer_id'] = $this->getCustomerReference();
-        $data['card_nonce'] = $this->getCard();
-        $data['cardholder_name'] = $this->getCardholderName();
+        $data = new CreateSquareCardRequest($idempotencyKey, $sourceId, $card);
 
         return $data;
     }
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        /** @var CardsApi $api_instance */
+        $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->createCustomerCard($data['customer_id'], $data);
+            $result = $api_instance->createCard($data);
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $response = [
                     'status' => 'success',
-                    'card' => $result->getCard(),
-                    'customerId' => $data['customer_id']
+                    'card' => $result->getResult()->getCard(),
+                    'customerId' => $this->getCustomerReference()
                 ];
             }
         } catch (\Exception $e) {

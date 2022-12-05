@@ -3,7 +3,8 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square Purchase Request
@@ -75,7 +76,6 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('customerReference', $value);
     }
 
-
     public function getCustomerReference()
     {
         return $this->getParameter('customerReference');
@@ -121,57 +121,72 @@ class ChargeRequest extends AbstractRequest
         return $this->setParameter('note', $value);
     }
 
+    public function getVerificationToken()
+    {
+        return $this->getParameter('verificationToken');
+    }
+
+    public function setVerificationToken($verificationToken)
+    {
+        return $this->setParameter('verificationToken', $verificationToken);
+    }
+
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getPaymentsApi();
+    }
+
     public function getData()
     {
-        $data = [];
+        $amountMoney = new \Square\Models\Money();
+        $amountMoney->setAmount($this->getAmountInteger());
+        $amountMoney->setCurrency($this->getCurrency());
 
-        $data['idempotency_key'] = $this->getIdempotencyKey();
-        $data['amount_money'] = [
-            'amount' => $this->getAmountInteger(),
-            'currency' => $this->getCurrency()
-        ];
-        $data['location_id'] = $this->getLocationId();
-        $data['source_id'] = $this->getNonce();
-        $data['customer_id'] = $this->getCustomerReference();
-        $data['customer_card_id'] = $this->getCustomerCardId();
-        $data['reference_id'] = $this->getReferenceId();
-        $data['order_id'] = $this->getOrderId();
-        $data['note'] = $this->getNote();
+        $sourceId = $this->getNonce() ?? $this->getCustomerCardId();
+        $data = new \Square\Models\CreatePaymentRequest($sourceId, $this->getIdempotencyKey(), $amountMoney);
+        $data->setCustomerId($this->getCustomerReference());
+        $data->setLocationId($this->getLocationId());
+        $data->setNote($this->getNote());
+
+        if ($this->getVerificationToken()) {
+            $data->setVerificationToken($this->getVerificationToken());
+        }
 
         return $data;
     }
 
     public function sendData($data)
     {
-        $defaultApiConfig = new \SquareConnect\Configuration();
-        $defaultApiConfig->setAccessToken($this->getAccessToken());
-
-        if($this->getParameter('testMode')) {
-            $defaultApiConfig->setHost("https://connect.squareupsandbox.com");
-        }
-
-        $defaultApiClient = new \SquareConnect\ApiClient($defaultApiConfig);
-
-        $api_instance = new SquareConnect\Api\PaymentsApi($defaultApiClient);
-
-        $tenders = [];
-
         try {
+            $api_instance = $this->getApiInstance();
+
             $result = $api_instance->createPayment($data);
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $response = [
                     'status' => 'success',
-                    'transactionId' => $result->getPayment()->getId(),
-                    'referenceId' => $result->getPayment()->getReferenceId(),
-                    'created_at' => $result->getPayment()->getCreatedAt(),
-                    'orderId' => $result->getPayment()->getOrderId()
+                    'transactionId' => $result->getResult()->getPayment()->getId(),
+                    'referenceId' => $result->getResult()->getPayment()->getReferenceId(),
+                    'created_at' => $result->getResult()->getPayment()->getCreatedAt(),
+                    'orderId' => $result->getResult()->getPayment()->getOrderId()
                 ];
             }
         } catch (\Exception $e) {
