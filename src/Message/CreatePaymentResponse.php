@@ -48,11 +48,16 @@ class CreatePaymentResponse extends AbstractResponse implements ResponseInterfac
      */
     public function getMessage()
     {
-        $message = '' . ($this->data['result']->getReasonPhrase() ?? '');
+        if ($this->data['successful']) {
+            return $this->getPayment()->getStatus();
+        }
+
         if (isset($this->data['error'])) {
-            $message .= ' ' . $this->data['error']['code'] . ': ';
+            $message = $this->data['error']['code'] . ': ';
             $message .= $this->data['error']['detail'];
             $message = trim($message);
+        } else {
+            $message = 'Unknown error';
         }
         return $message;
     }
