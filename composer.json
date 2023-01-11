@@ -1,5 +1,5 @@
 {
-    "name": "blasttech/omnipay-square",
+    "name": "alofoxx/omnipay-square",
     "type": "library",
     "description": "Square driver for the Omnipay payment processing library",
     "keywords": [
@@ -27,14 +27,14 @@
     },
     "require": {
         "omnipay/common": "~3.0",
-        "square/connect": "*"
+        "square/square": "*"
     },
     "require-dev": {
         "omnipay/tests": "~3.0"
     },
     "extra": {
         "branch-alias": {
-            "dev-master": "2.0.x-dev"
+            "dev-master": "3.0.x-dev"
         }
     }
 }

@@ -1,16 +1,11 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: Dylan
- * Date: 17/04/2019
- * Time: 3:28 PM
- */
 
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 class FetchCardRequest extends AbstractRequest
 {
@@ -43,12 +38,22 @@ class FetchCardRequest extends AbstractRequest
     {
         return $this->setParameter('card', $value);
     }
-    /**
-     * Get the raw data array for this message. The format of this varies from gateway to
-     * gateway, but will usually be either an associative array, or a SimpleXMLElement.
-     *
-     * @return mixed
-     */
+
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getCustomersApi();
+    }
+
     public function getData()
     {
         $data = [];
@@ -67,22 +72,22 @@ class FetchCardRequest extends AbstractRequest
      */
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->retrieveCustomer($data['customer_id']);
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $cardId = $this->getCard();
-                $cards = array_filter($result->getCustomer()->getCards(), function ($cur) use ($cardId){
+                $cards = array_filter($result->getResult()->getCustomer()->getCards(), function ($cur) use ($cardId){
                     return $cur->getId() == $cardId;
                 });
 
@@ -97,7 +102,7 @@ class FetchCardRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating customer: ', $e->getMessage()
+                'detail' => 'Exception when creating customer: ' . $e->getMessage()
             ];
         }
 
