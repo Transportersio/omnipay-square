@@ -1,17 +1,12 @@
 <?php
-/**
- * Created by IntelliJ IDEA.
- * User: Dylan
- * Date: 16/04/2019
- * Time: 3:51 PM
- */
 
 namespace Omnipay\Square\Message;
 
-
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\ResponseInterface;
-use SquareConnect;
+use Square\Environment;
+use Square\Models\Address;
+use Square\SquareClient;
 
 class UpdateCustomerRequest extends AbstractRequest
 {
@@ -29,7 +24,6 @@ class UpdateCustomerRequest extends AbstractRequest
     {
         return $this->setParameter('customerReference', $value);
     }
-
 
     public function getCustomerReference()
     {
@@ -76,7 +70,7 @@ class UpdateCustomerRequest extends AbstractRequest
         return $this->setParameter('email', $value);
     }
 
-    public function setAddress(SquareConnect\Model\Address $value)
+    public function setAddress(\Square\Models\Address $value)
     {
         return $this->setParameter('address', $value);
     }
@@ -106,9 +100,8 @@ class UpdateCustomerRequest extends AbstractRequest
         return $this->setParameter('phoneNumber', $value);
     }
 
-
-
-    public function getNote(){
+    public function getNote()
+    {
         return $this->getParameter('note');
     }
 
@@ -117,7 +110,8 @@ class UpdateCustomerRequest extends AbstractRequest
         return $this->setParameter('note', $value);
     }
 
-    public function getReferenceId(){
+    public function getReferenceId()
+    {
         return $this->getParameter('referenceId');
     }
 
@@ -125,6 +119,22 @@ class UpdateCustomerRequest extends AbstractRequest
     {
         return $this->setParameter('referenceId', $value);
     }
+
+    public function getEnvironment()
+    {
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
+    }
+
+    private function getApiInstance()
+    {
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getCustomersApi();
+    }
+
     /**
      * Get the raw data array for this message. The format of this varies from gateway to
      * gateway, but will usually be either an associative array, or a SimpleXMLElement.
@@ -133,53 +143,53 @@ class UpdateCustomerRequest extends AbstractRequest
      */
     public function getData()
     {
-        $data = [];
+        $data = new \Square\Models\UpdateCustomerRequest();
+        $data->setGivenName($this->getFirstName());
+        $data->setFamilyName($this->getLastName());
+        $data->setCompanyName($this->getCompanyName());
+        $data->setEmailAddress($this->getEmail());
 
-        $data['given_name'] = $this->getFirstName();
-        $data['family_name'] = $this->getLastName();
-        $data['company_name'] = $this->getCompanyName();
-        $data['email_address'] = $this->getEmail();
-
-        $data['address'] = $this->getAddress();
-        $data['nickname'] = $this->getEmail();
-        $data['phone_number'] = $this->getPhoneNumber();
-        $data['reference_id'] = $this->getReferenceId();
-        $data['note'] = $this->getNote();
+        $data->setAddress($this->getAddress());
+        $data->setNickname($this->getEmail());
+        $data->setPhoneNumber($this->getPhoneNumber());
+        $data->setReferenceId($this->getReferenceId());
+        $data->setNote($this->getNote());
 
         return $data;
     }
+
     /**
      * Send the request with specified data
      *
-     * @param  mixed $data The data to send
+     * @param mixed $data The data to send
      * @return ResponseInterface
      */
 
     public function sendData($data)
     {
-        SquareConnect\Configuration::getDefaultConfiguration()->setAccessToken($this->getAccessToken());
-
-        $api_instance = new SquareConnect\Api\CustomersApi();
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->updateCustomer($this->getCustomerReference(), $data);
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $response = [
                     'status' => 'success',
-                    'customer' => $result->getCustomer()
+                    'customer' => $result->getResult()->getCustomer()
                 ];
             }
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when creating customer: ', $e->getMessage()
+                'detail' => 'Exception when updating customer: ' . $e->getMessage()
             ];
         }
 

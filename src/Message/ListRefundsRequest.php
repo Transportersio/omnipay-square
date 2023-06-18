@@ -3,7 +3,8 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\SquareClient;
 
 /**
  * Square List Refunds Request
@@ -70,34 +71,29 @@ class ListRefundsRequest extends AbstractRequest
         return $this->setParameter('cursor', $value);
     }
 
-    /*
-    public function getCheckoutId()
+    public function getEnvironment()
     {
-    return $this->getParameter('checkOutId');
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
     }
 
-    public function setCheckoutId($value)
+    private function getApiInstance()
     {
-    return $this->setParameter('checkOutId', $value);
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getRefundsApi();
     }
-    */
 
     public function getData()
     {
         return [];
     }
 
-    public function sendData()
+    public function sendData($data = '')
     {
-        $defaultApiConfig = new \SquareConnect\Configuration();
-        $defaultApiConfig->setAccessToken($this->getAccessToken());
-
-        if($this->getParameter('testMode')) {
-            $defaultApiConfig->setHost("https://connect.squareupsandbox.com");
-        }
-
-        $defaultApiClient = new \SquareConnect\ApiClient($defaultApiConfig);
-        $api_instance = new SquareConnect\Api\RefundsApi($defaultApiClient);
+        $api_instance = $this->getApiInstance();
 
         try {
             $result = $api_instance->listPaymentRefunds(
@@ -108,15 +104,17 @@ class ListRefundsRequest extends AbstractRequest
                 $this->getLocationId()
             );
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $refunds = [];
-                $refundItems = $result->getRefunds();
+                $refundItems = $result->getResult()->getRefunds();
                 if ($refundItems === null) {
                     $refundItems = [];
                 }
@@ -142,7 +140,7 @@ class ListRefundsRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when calling TransactionsApi->listRefunds: ', $e->getMessage()
+                'detail' => 'Exception when calling RefundsApi->listPaymentRefunds: ' . $e->getMessage()
             ];
         }
 

@@ -3,7 +3,9 @@
 namespace Omnipay\Square\Message;
 
 use Omnipay\Common\Message\AbstractRequest;
-use SquareConnect;
+use Square\Environment;
+use Square\Models\ListPaymentsResponse;
+use Square\SquareClient;
 
 /**
  * Square List Transactions Request
@@ -70,38 +72,32 @@ class ListTransactionsRequest extends AbstractRequest
         return $this->setParameter('cursor', $value);
     }
 
-    /*
-    public function getCheckoutId()
+    public function getEnvironment()
     {
-    return $this->getParameter('checkOutId');
+        return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
     }
 
-    public function setCheckoutId($value)
+    private function getApiInstance()
     {
-    return $this->setParameter('checkOutId', $value);
+        $api_client = new SquareClient([
+            'accessToken' => $this->getAccessToken(),
+            'environment' => $this->getEnvironment()
+        ]);
+
+        return $api_client->getPaymentsApi();
     }
-    */
 
     public function getData()
     {
         return [];
     }
 
-    public function sendData()
+    public function sendData($data = '')
     {
-        $defaultApiConfig = new \SquareConnect\Configuration();
-        $defaultApiConfig->setAccessToken($this->getAccessToken());
-
-        if($this->getParameter('testMode')) {
-            $defaultApiConfig->setHost("https://connect.squareupsandbox.com");
-        }
-
-        $defaultApiClient = new \SquareConnect\ApiClient($defaultApiConfig);
-
-        $api_instance = new SquareConnect\Api\PaymentsApi($defaultApiClient);
+        $api_instance = $this->getApiInstance();
 
         try {
-            $result = $api_instance->listTransactions(
+            $result = $api_instance->listPayments(
                 $this->getBeginTime(),
                 $this->getEndTime(),
                 $this->getSortOrder(),
@@ -109,80 +105,34 @@ class ListTransactionsRequest extends AbstractRequest
                 $this->getLocationId()
             );
 
-            if ($error = $result->getErrors()) {
+            if ($errors = $result->getErrors()) {
                 $response = [
                     'status' => 'error',
-                    'code' => $error['code'],
-                    'detail' => $error['detail']
+                    'code' => $errors[0]->getCode(),
+                    'detail' => $errors[0]->getDetail(),
+                    'field' => $errors[0]->getField(),
+                    'category' => $errors[0]->getCategory()
                 ];
             } else {
                 $transactions = [];
-                $transactionList = $result->getTransactions();
+                $transactionList = $result->getResult()->getPayments();
                 if ($transactionList === null) {
                     $transactionList = [];
                 }
+                /** @var \Square\Models\Payment $transaction */
                 foreach ($transactionList as $transaction) {
                     $trans = new \stdClass();
                     $trans->id = $transaction->getID();
                     $trans->orderId = $transaction->getOrderId();
-                    $trans->clientId = $transaction->getClientId();
+                    $trans->clientId = $transaction->getCustomerId();
                     $trans->referenceId = $transaction->getReferenceId();
                     $trans->locationId = $transaction->getLocationId();
                     $trans->createdAt = $transaction->getCreatedAt();
                     $trans->shippingAddress = $transaction->getShippingAddress();
-                    $trans->product = $transaction->getProduct();
+                    $trans->amount = $transaction->getAmountMoney()->getAmount();
+                    $trans->status = $transaction->getStatus();
                     $trans->items = [];
-                    $tenderList = $transaction->getTenders();
-                    if ($tenderList === null) {
-                        $tenderList = [];
-                    }
-                    foreach ($tenderList as $tender) {
-                        $item = new \stdClass();
-                        $item->id = $tender->getId();
-                        $item->quantity = 1;
-                        $item->amount = $tender->getAmountMoney()->getAmount();
-                        $item->currency = $tender->getAmountMoney()->getCurrency();
-                        if ($tender->getTipMoney() !== null) {
-                            $item->tipAmount = $tender->getTipMoney()->getAmount();
-                        }
-                        $item->processingFee = $tender->getProcessingFeeMoney()->getAmount();
-                        $item->note = $tender->getNote();
-                        $item->type = $tender->getType();
-                        $item->customerId = $tender->getCustomerId();
-                        $item->cardDetails = new \stdClass();
-                        $cardDetails = $tender->getCardDetails();
-                        if (!empty($cardDetails)) {
-                            $item->cardDetails->status = $cardDetails->getStatus();
-                            $item->cardDetails->card = $cardDetails->getCard();
-                            $item->cardDetails->entryMethod = $cardDetails->getEntryMethod();
-                        }
-                        $item->cashDetails = new \stdClass();
-                        $cashDetails = $tender->getcashDetails();
-                        if (!empty($cashDetails)) {
-                            $item->cashDetails->buyerTenderedMoney = $cashDetails->getBuyerTenderedMoney()->getAmount();
-                            $item->cashDetails->chargeBackMoney = $cashDetails->getChangeBackMoney()->getAmount();
-                        }
-                        $trans->items[] = $item;
-                    }
                     $trans->refunds = [];
-                    $refundList = $transaction->getRefunds();
-                    if ($refundList === null) {
-                        $refundList = [];
-                    }
-                    foreach ($refundList as $refund) {
-                        $item = new \stdClass();
-                        $item->id = $refund->getId();
-                        $item->tenderId = $refund->getTenderId();
-                        $item->locationId = $refund->getLocationId();
-                        $item->transactionId = $refund->getTransactionId();
-                        $item->createdAt = $refund->getCreatedAt();
-                        $item->reason = $refund->getReason();
-                        $item->status = $refund->getStatus();
-                        $item->amount = $refund->getAmountMoney()->getAmount();
-                        $item->processingFee = $refund->getProcessingFeeMoney();
-                        $item->currency = $refund->getAmountMoney()->getCurrency();
-                        $trans->items[] = $item;
-                    }
                     $transactions[] = $trans;
                 }
                 $response = [
@@ -194,7 +144,7 @@ class ListTransactionsRequest extends AbstractRequest
         } catch (\Exception $e) {
             $response = [
                 'status' => 'error',
-                'detail' => 'Exception when calling TransactionsApi->listTransactions: ', $e->getMessage()
+                'detail' => 'Exception when calling PaymentsApi->listPayments: ' . $e->getMessage()
             ];
         }
 
