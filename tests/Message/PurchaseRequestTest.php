@@ -6,12 +6,12 @@ use Omnipay\Tests\TestCase;
 
 class WebPaymentRequestTest extends TestCase
 {
-    protected function setUp()
-    {
+    protected function setUp(): void {
         $this->request = new WebPaymentRequest($this->getHttpClient(), $this->getHttpRequest());
 
         $this->request->initialize(
             array(
+                'locationId' => getenv('SQUARE_LOCATION_ID'),
                 'transactionReference' => 'REF01',
                 'currency' => 'USD',
                 'items' => array(
@@ -29,6 +29,7 @@ class WebPaymentRequestTest extends TestCase
     {
         $this->request->initialize(
             array(
+                'locationId' => getenv('SQUARE_LOCATION_ID'),
                 'transactionReference' => 'REF01',
                 'currency' => 'USD',
                 'items' => array(

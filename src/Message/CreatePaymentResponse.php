@@ -18,7 +18,12 @@ class CreatePaymentResponse extends AbstractResponse implements ResponseInterfac
      */
     public function isSuccessful()
     {
-        return ($this->data['successful'] && in_array($this->getPayment()->getStatus(), array('COMPLETED', 'APPROVED'), true));
+        return (
+            $this->data['successful'] && in_array(
+                $this->getPayment()->getStatus(),
+                array('COMPLETED', 'APPROVED'),
+                true
+            ));
     }
 
     /**
@@ -119,7 +124,7 @@ class CreatePaymentResponse extends AbstractResponse implements ResponseInterfac
         return $this->data['result']->getPayment() ?? null;
     }
 
-    // The following methods are provided for convenience, but all can be done with getPayment()->get{PaymentAttribute}()
+    //The following methods are provided for convenience, but all can be done with getPayment()->get{PaymentAttribute}()
 
     public function getOrderId()
     {

@@ -29,7 +29,7 @@ class CardResponse extends AbstractResponse implements RedirectResponseInterface
 
     public function getCard(): ?Card
     {
-        if(!empty($this->data['card'])) {
+        if (!empty($this->data['card'])) {
             return $this->data['card'];
         }
 
@@ -38,7 +38,7 @@ class CardResponse extends AbstractResponse implements RedirectResponseInterface
 
     public function getCardReference(): ?string
     {
-        if(!empty($this->data['card'])) {
+        if (!empty($this->data['card'])) {
             return $this->data['card']->getId();
         }
 

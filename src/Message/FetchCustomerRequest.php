@@ -88,5 +88,4 @@ class FetchCustomerRequest extends AbstractRequest
     {
         return $this->response = new CustomerResponse($this, $response);
     }
-
 }

@@ -92,7 +92,11 @@ class RefundRequest extends AbstractRequest
         $amountMoney->setAmount($this->getAmountInteger());
         $amountMoney->setCurrency($this->getCurrency());
 
-        $data = new \Square\Models\RefundPaymentRequest($this->getIdempotencyKey(), $amountMoney, $this->getTransactionId());
+        $data = new \Square\Models\RefundPaymentRequest(
+            $this->getIdempotencyKey(),
+            $amountMoney,
+            $this->getTransactionId()
+        );
         $data->setReason($this->getReason());
 
         return $data;
@@ -129,7 +133,6 @@ class RefundRequest extends AbstractRequest
                 if (!empty($processing_fee)) {
                     $response['processing_fee'] = $processing_fee->getAmount();
                 }
-
             }
         } catch (\Exception $e) {
             $response = [

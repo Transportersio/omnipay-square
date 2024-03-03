@@ -1,11 +1,11 @@
 <?php
 
 namespace Omnipay\Square\Message;
+
 use Omnipay\Common\Message\AbstractRequest;
 
 use Square\Environment;
 use Square\SquareClient;
-
 
 /**
  * Square Complete Payment Request
@@ -40,6 +40,23 @@ class CompletePaymentRequest extends AbstractRequest
         return $this->setParameter('accessToken', $value);
     }
 
+    public function getVersionToken()
+    {
+        return $this->getParameter('versionToken') ?? null;
+    }
+
+    /**
+     * BETA FEATURE: Used for optimistic concurrency. This opaque token identifies the current `Payment`
+     * version that the caller expects. If the server has a different version of the Payment, the update fails and
+     * a response with a VERSION_MISMATCH error is returned.
+     *
+     * https://developer.squareup.com/reference/square/payments-api/complete-payment#request__property-version_token
+     */
+    public function setVersionToken(string $value)
+    {
+        return $this->setParameter('versionToken', $value);
+    }
+
     public function getEnvironment()
     {
         return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
@@ -54,6 +71,17 @@ class CompletePaymentRequest extends AbstractRequest
 
         return $api_client->getPaymentsApi();
     }
+
+    public function getLocationId()
+    {
+        return $this->getParameter('locationId') ?? null;
+    }
+
+    public function setLocationId(string $value)
+    {
+        return $this->setParameter('locationId', $value);
+    }
+
 
     public function getData()
     {

@@ -20,11 +20,13 @@ class DeleteCustomerRequest extends AbstractRequest
         return $this->setParameter('accessToken', $value);
     }
 
-    public function setCustomerReference($value){
+    public function setCustomerReference($value)
+    {
         return $this->setParameter('customerReference', $value);
     }
 
-    public function getCustomerReference(){
+    public function getCustomerReference()
+    {
         return $this->getParameter('customerReference');
     }
 

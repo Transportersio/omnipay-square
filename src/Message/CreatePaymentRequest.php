@@ -5,6 +5,7 @@ namespace Omnipay\Square\Message;
 use Omnipay\Common\Message\AbstractRequest;
 use Square\Environment;
 use Square\Models\Address;
+use Square\Models\CustomerDetails;
 use Square\Models\ExternalPaymentDetails;
 use Square\Models\Money;
 use Square\SquareClient;
@@ -44,12 +45,37 @@ class CreatePaymentRequest extends AbstractRequest
 
     public function getDelayDuration()
     {
-        return $this->getParameter('delayDuration') ?? null;
+        return $this->getParameter('delayDuration') ?? 'P7D';
     }
 
-    public function setDelayDuration($value)
+    /**
+     * Set the delay time duration for the payment request in RFC 3339 format
+     * Only supported for card payments
+     * Default:
+     *   Card-present payments: "PT36H" (36 hours) from the creation time.
+     *   Card-not-present payments: "P7D" (7 days) from the creation time.
+     *   Example for 2 days, 12 hours, 30 minutes, and 15 seconds: P2DT12H30M15S
+     * https://developer.squareup.com/docs/payments-api/take-payments/card-payments/delayed-capture#time-threshold
+     */
+    public function setDelayDuration(string $value)
     {
         return $this->setParameter('delayDuration', $value);
+    }
+
+    public function getDelayAction()
+    {
+        return $this->getParameter('delayAction') ?? 'CANCEL';
+    }
+
+    /**
+     * Set the delay action for the payment request
+     * The action must be CANCEL or COMPLETE
+     * Default: CANCEL
+     * https://developer.squareup.com/docs/payments-api/take-payments/card-payments/delayed-capture#time-threshold
+     */
+    public function setDelayAction(string $value)
+    {
+        return $this->setParameter('delayAction', $value);
     }
 
     public function getAutocomplete()
@@ -57,7 +83,7 @@ class CreatePaymentRequest extends AbstractRequest
         return $this->getParameter('autocomplete') ?? true;
     }
 
-    public function setAutocomplete($autocomplete)
+    public function setAutocomplete(bool $autocomplete)
     {
         return $this->setParameter('autocomplete', $autocomplete);
     }
@@ -325,6 +351,26 @@ class CreatePaymentRequest extends AbstractRequest
         return $this->setParameter('accessToken', $value);
     }
 
+    public function getCustomerInitiated()
+    {
+        return $this->getParameter('customerInitiated') ?? null;
+    }
+
+    public function setCustomerInitiated(bool $value)
+    {
+        return $this->setParameter('customerInitiated', $value);
+    }
+
+    public function getSellerKeyedIn()
+    {
+        return $this->getParameter('sellerKeyedIn') ?? null;
+    }
+
+    public function setSellerKeyedIn(bool $value)
+    {
+        return $this->setParameter('sellerKeyedIn', $value);
+    }
+
     public function getEnvironment()
     {
         return $this->getTestMode() === true ? Environment::SANDBOX : Environment::PRODUCTION;
@@ -398,14 +444,14 @@ class CreatePaymentRequest extends AbstractRequest
             }
             unset($cardData);
         }
+        // set up Payment Request body
+        $data = new \Square\Models\CreatePaymentRequest($this->getSourceId(), $this->getIdempotencyKey());
 
         // set up amount of money to accept for this payment, not including tip money.
         $amountMoney = new Money();
         $amountMoney->setAmount($this->getAmountInteger());
         $amountMoney->setCurrency($this->getCurrency());
-
-        // set up Payment Request body
-        $data = new \Square\Models\CreatePaymentRequest($this->getSourceId(), $this->getIdempotencyKey(), $amountMoney);
+        $data->setAmountMoney($amountMoney);
 
         // tip money
         if ($this->getTipAmountInteger()) {
@@ -424,7 +470,12 @@ class CreatePaymentRequest extends AbstractRequest
             $data->setAppFeeMoney($appFeeMoney);
         }
 
-        $data->setDelayDuration($this->getDelayDuration());
+        // set up a delayed capture if needed
+        if ($this->getAutocomplete() === false) {
+            $data->setDelayDuration($this->getDelayDuration());
+            $data->setDelayAction($this->getDelayAction());
+        }
+
         $data->setAutocomplete($this->getAutocomplete());
         $data->setOrderId($this->getOrderId());
         $data->setCustomerId($this->getCustomerId());
@@ -450,7 +501,10 @@ class CreatePaymentRequest extends AbstractRequest
 
         // set up details for external payment (payment->sourceId is EXTERNAL)
         if ($this->getExternalPaymentType() !== null) {
-            $externalDetails = new ExternalPaymentDetails($this->getExternalPaymentType(), $this->getExternalPaymentSource());
+            $externalDetails = new ExternalPaymentDetails(
+                $this->getExternalPaymentType(),
+                $this->getExternalPaymentSource()
+            );
             // note this is a separate sourceId from the payment sourceId
             $externalDetails->setSourceId($this->getExternalPaymentSourceId());
             if ($this->getExternalPaymentSourceFeeAmountInteger() !== null) {
@@ -460,6 +514,14 @@ class CreatePaymentRequest extends AbstractRequest
                 $externalDetails->setSourceFeeMoney($sourceFeeMoney);
             }
             $data->setExternalDetails($externalDetails);
+        }
+
+        // set up customer details
+        if ($this->getCustomerInitiated() !== null || $this->getSellerKeyedIn() !== null) {
+            $customerDetails = new CustomerDetails();
+            $customerDetails->setCustomerInitiated($this->getCustomerInitiated());
+            $customerDetails->setSellerKeyedIn($this->getSellerKeyedIn());
+            $data->setCustomerDetails($customerDetails);
         }
 
         return $data;

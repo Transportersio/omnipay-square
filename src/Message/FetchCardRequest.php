@@ -87,11 +87,11 @@ class FetchCardRequest extends AbstractRequest
                 ];
             } else {
                 $cardId = $this->getCard();
-                $cards = array_filter($result->getResult()->getCustomer()->getCards(), function ($cur) use ($cardId){
+                $cards = array_filter($result->getResult()->getCustomer()->getCards(), function ($cur) use ($cardId) {
                     return $cur->getId() == $cardId;
                 });
 
-                if($cards === null || count($cards) == 0){
+                if ($cards === null || count($cards) == 0) {
                     throw new \Exception('Card not found!');
                 }
                 $response = [

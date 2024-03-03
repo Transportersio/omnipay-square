@@ -1,11 +1,26 @@
 language: php
 
 php:
-  - 5.4
-  - 5.5
-  - 5.6
+  - 8.1
+  - 8.2
 
-before_script:
-  - composer install -n --dev --prefer-source
+dist: focal
+
+addons:
+  apt:
+    packages:
+      - libonig5
+
+# This triggers builds to run on the new TravisCI infrastructure.
+# See: http://docs.travis-ci.com/user/workers/container-based-infrastructure/
+sudo: false
+
+# Cache composer
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+install:
+  - travis_retry composer install --prefer-dist --no-interaction
 
 script: vendor/bin/phpcs --standard=PSR2 src && vendor/bin/phpunit --coverage-text

@@ -69,6 +69,16 @@ class CreateCardRequest extends AbstractRequest
         return $api_client->getCardsApi();
     }
 
+    public function getLocationId()
+    {
+        return $this->getParameter('locationId') ?? null;
+    }
+
+    public function setLocationId(string $value)
+    {
+        return $this->setParameter('locationId', $value);
+    }
+
     public function getData()
     {
         $idempotencyKey = uniqid();
